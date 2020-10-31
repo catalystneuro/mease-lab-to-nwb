@@ -4,10 +4,11 @@ import os
 
 from joblib import Parallel, delayed
 
-from mease_lab_to_nwb import CEDNWBConverter
+from mease_lab_to_nwb import SyntalosNWBConverter
 
 n_jobs = 1  # number of parallel streams to run
 
+# TODO: Need to update base_path
 base_path = "D:/Heidelberg_data/CED_example_data"
 
 # Manual list of selected sessions that cause problems with the general functionality
@@ -22,7 +23,7 @@ for j, (virmen_session, spikeglx_session) in enumerate(zip(virmen_session_string
     nwbfile_paths.append(os.path.join(base_path, virmen_session) + "_local_stub.nwb")  # name defaults to virmen session
 
 
-def run_ced_conv(virmen_session, spikeglx_session, nwbfile_path):
+def run_syntalos_conv(virmen_session, spikeglx_session, nwbfile_path):
     """Conversion function to be run in parallel."""
     if os.path.exists(base_path):
         print(f"Processsing {virmen_session}...")
@@ -32,7 +33,7 @@ def run_ced_conv(virmen_session, spikeglx_session, nwbfile_path):
                 TowersPosition=dict(folder_path=virmen_session)
             )
 
-            converter = CEDNWBConverter(**input_args)
+            converter = SyntalosNWBConverter(**input_args)
             metadata = converter.get_metadata()
 
             # Session specific metadata
@@ -50,7 +51,7 @@ def run_ced_conv(virmen_session, spikeglx_session, nwbfile_path):
         print(f"The folder ({base_path}) does not exist!")
 
 
-Parallel(n_jobs=n_jobs)(delayed(run_ced_conv)(virmen_session, spikeglx_session, nwbfile_path)
+Parallel(n_jobs=n_jobs)(delayed(run_syntalos_conv)(virmen_session, spikeglx_session, nwbfile_path)
                         for virmen_session, spikeglx_session, nwbfile_path
                         in zip(virmen_session_strings, spikeglx_session_strings, nwbfile_paths)
                         if os.path.split(virmen_session)[1] not in exlude_sessions)

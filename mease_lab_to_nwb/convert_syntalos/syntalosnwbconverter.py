@@ -4,14 +4,15 @@ from datetime import datetime, timedelta
 
 from dateutil.parser import parse as dateparse
 from isodate import duration_isoformat
-from nwb_conversion_tools import NWBConverter, SpikeGLXRecordingInterface
+# TODO: Need to add IntanRecordingInterface over on nwb-conversion-tools, or use Ben's suggested auto-class creation function
+from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
 
 from ..utils import convert_mat_file_to_dict
 
 
-class CEDNWBConverter(NWBConverter):
+class SyntalosNWBConverter(NWBConverter):
     data_interface_classes = dict(
-        SpikeGLXRecording=SpikeGLXRecordingInterface,
+        IntanRecording=IntanRecordingInterface,
     )
 
     def __init__(self, **input_args):
