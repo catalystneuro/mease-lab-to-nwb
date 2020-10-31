@@ -1,1 +1,2 @@
-from .convert_ced.cedsnwbconverter import CEDNWBConverter
+from .convert_ced.cednwbconverter import CEDNWBConverter
+from .convert_syntalos.syntalosnwbconverter import SyntalosNWBConverter
