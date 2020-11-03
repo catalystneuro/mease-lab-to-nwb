@@ -17,7 +17,7 @@ def get_channel_info(fpath, i):
         return None, None
 
     if f.ChannelType(i) == sp.DataType.Off:
-        print(f'Channel type: Off')
+        print(f'Channel {i} is type Off, skipping it...')
         return None, None
 
     ch_info = {
@@ -46,7 +46,7 @@ def get_channel_data(fpath, i):
         return None, None
 
     if f.ChannelType(i) == sp.DataType.Off:
-        print(f'Channel type: Off')
+        print(f'Channel {i} is type Off, skipping it...')
         return None, None
 
     # Data storage and function finder
