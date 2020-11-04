@@ -39,7 +39,7 @@ def get_channel_info(fpath, i):
     return ch_info, f
 
 
-def get_channel_data(fpath, i):
+def get_channel_data(fpath, i, start, stop):
     f = sp.SonFile(fpath, True)
     if f.GetOpenError() != 0:
         print('Error opening file:', sp.GetErrorString(f.GetOpenError()))
@@ -71,3 +71,7 @@ def get_channel_data(fpath, i):
     )
 
     return data, f
+
+class CEDRecordingExtractor(RecordingExtractor):
+    def get_traces(channel_ids=None, start_frame=None, end_frame=None):
+        return np.vstack([get_channel_data(self.fpath, i, start_frame, end_frame) for i in channel_ids])
