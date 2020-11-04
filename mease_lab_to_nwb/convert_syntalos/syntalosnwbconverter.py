@@ -14,21 +14,17 @@ class SyntalosNWBConverter(NWBConverter):
     data_interface_classes = dict()
 
     def __init__(self, **input_args):
-        self._recording_type = 'Fill me'
         super().__init__(**input_args)
-
-    def get_recording_type(self):
-        return self._recording_type
 
     def get_metadata(self):
 
         return dict(
             NWBFile=dict(
-                identifier=session_id,
-                session_start_time=session_start.astimezone(),
-                session_id=session_id,
+                #identifier="fill_me",
+                #session_start_time=datetime.datetime("fill me"),
+                #session_id="fill me",
                 institution="Heidelberg",
-                lab="fill me"
+                #lab="fill me"
             ),
             Subject=dict(),
         )
