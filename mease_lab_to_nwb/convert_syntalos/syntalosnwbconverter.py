@@ -2,6 +2,7 @@
 from pathlib import Path
 from datetime import datetime
 from dateutil.parser import parse as dateparse
+import toml
 
 from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
 
@@ -15,7 +16,9 @@ class SyntalosNWBConverter(NWBConverter):
 
     def get_metadata(self):
         """Auto-populate as much metadata as possible."""
-        session_id = Path(self.data_interface_objects['IntanRecording'].input_args['file_path']).stem
+        intan_filepath = Path(self.data_interface_objects['IntanRecording'].input_args['file_path'])
+        session_id = intan_filepath.stem
+        subject_id = toml.load(intan_filepath.parent.parent / "attributes.toml")['subject_id']
         session_start = dateparse(
             "".join([name for name in session_id.split('_')if name.isdigit()]),
             yearfirst=True,
@@ -30,7 +33,9 @@ class SyntalosNWBConverter(NWBConverter):
                 institution="EMBL - Heidelberg",
                 lab="Mease"
             ),
-            Subject=dict(),
+            Subject=dict(
+                subject_id=subject_id
+            ),
             IntanRecording=None,
             # IntanAccelerometer=dict()
         )
