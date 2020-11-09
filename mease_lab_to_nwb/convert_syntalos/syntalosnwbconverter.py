@@ -1,30 +1,47 @@
 """Authors: Cody Baker and Ben Dichter."""
-import os
-from datetime import datetime, timedelta
-
+from pathlib import Path
+from datetime import datetime
 from dateutil.parser import parse as dateparse
-from isodate import duration_isoformat
-# TODO: Need to add IntanRecordingInterface over on nwb-conversion-tools, or use Ben's suggested auto-class creation function
-from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
+import toml
 
-from ..utils import convert_mat_file_to_dict
+from nwb_conversion_tools import NWBConverter
+from syntaloseventinterface import SyntalosEventInterface
+from syntalosimageinterface import SyntalosImageInterface
 
 
 class SyntalosNWBConverter(NWBConverter):
-    data_interface_classes = dict()
+    """Primary conversion class for Syntalos."""
 
-    def __init__(self, **input_args):
-        super().__init__(**input_args)
+    data_interface_classes = dict(
+        SyntalosEvent=SyntalosEventInterface,
+        SyntalosImage=SyntalosImageInterface
+    )
 
     def get_metadata(self):
-
-        return dict(
-            NWBFile=dict(
-                #identifier="fill_me",
-                #session_start_time=datetime.datetime("fill me"),
-                #session_id="fill me",
-                institution="Heidelberg",
-                #lab="fill me"
-            ),
-            Subject=dict(),
+        """Auto-populate as much metadata as possible."""
+        intan_filepath = Path(self.data_interface_objects['IntanRecording'].input_args['file_path'])
+        session_id = intan_filepath.stem
+        subject_id = toml.load(intan_filepath.parent.parent / "attributes.toml")['subject_id']
+        session_start = dateparse(
+            "".join([name for name in session_id.split('_')if name.isdigit()]),
+            yearfirst=True,
+            dayfirst=True
         )
+        metadata = dict(
+            NWBFile=dict(
+                identifier=session_id,
+                session_start_time=session_start.astimezone(),
+                file_create_date=datetime.now().astimezone(),
+                session_id=session_id,
+                institution="EMBL - Heidelberg",
+                lab="Mease"
+            ),
+            Subject=dict(
+                subject_id=subject_id
+            ),
+            SyntalosEvent=dict(),
+            SyntalosImage=dict()
+        )
+        # Temporary, depending on how quickly the metadata refactor takes on nwb-conversion-tools
+        metadata.update(IntanRecording=self.data_interface_objects['IntanRecording'].get_metadata())
+        return metadata
