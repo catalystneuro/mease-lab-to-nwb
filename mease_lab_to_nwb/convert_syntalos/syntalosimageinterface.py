@@ -21,6 +21,10 @@ class SyntalosImageInterface(BaseDataInterface):
             )
         )
 
+    def get_metadata(self):
+        """Return empty dictionary for NWBConverter routing."""
+        return dict()
+
     def convert_data(self, nwbfile: NWBFile, metadata_dict: dict, stub_test: bool = False):
         """
         Primary conversion function for the custom Syntalos image interface.
@@ -46,6 +50,6 @@ class SyntalosImageInterface(BaseDataInterface):
             description="Videos recorded by TIS camera.",
             format="external",
             external_file=video_file_path_list,
-            timestamps=video_timestamps[0],
+            timestamps=H5DataIO(video_timestamps[0], compression="gzip")
         )
         nwbfile.add_acquisition(videos)

@@ -20,6 +20,10 @@ class SyntalosEventInterface(BaseDataInterface):
             )
         )
 
+    def get_metadata(self):
+        """Return empty dictionary for NWBConverter routing."""
+        return dict()
+
     def convert_data(self, nwbfile: NWBFile, metadata_dict: dict, stub_test: bool = False):
         """
         Primary conversion function for the custom Syntalos event interface.
