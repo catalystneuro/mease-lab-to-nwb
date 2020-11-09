@@ -6,6 +6,7 @@ import toml
 
 from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
 
+
 class SyntalosNWBConverter(NWBConverter):
     """Primary conversion class for Syntalos."""
 
@@ -23,7 +24,8 @@ class SyntalosNWBConverter(NWBConverter):
             yearfirst=True,
             dayfirst=True
         )
-        metadata = dict(
+        metadata = super().get_metadata()
+        metadata.update(
             NWBFile=dict(
                 identifier=session_id,
                 session_start_time=session_start.astimezone(),
