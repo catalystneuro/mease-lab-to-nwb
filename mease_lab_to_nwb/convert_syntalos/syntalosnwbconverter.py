@@ -5,6 +5,7 @@ from dateutil.parser import parse as dateparse
 import toml
 
 from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
+from syntaloseventinterface import SyntalosEventInterface
 
 
 class SyntalosNWBConverter(NWBConverter):
@@ -12,6 +13,7 @@ class SyntalosNWBConverter(NWBConverter):
 
     data_interface_classes = dict(
         IntanRecording=IntanRecordingInterface,
+        SyntalosEvent=SyntalosEventInterface
     )
 
     def get_metadata(self):
@@ -38,6 +40,8 @@ class SyntalosNWBConverter(NWBConverter):
             ),
             IntanRecording=None,
             # IntanAccelerometer=dict()
+            SyntalosEvent=dict(
+            )
         )
         # Temporary, depending on how quickly the metadata refactor takes on nwb-conversion-tools
         metadata.update(IntanRecording=self.data_interface_objects['IntanRecording'].get_metadata())
