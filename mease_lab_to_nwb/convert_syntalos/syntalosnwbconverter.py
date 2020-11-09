@@ -27,7 +27,8 @@ class SyntalosNWBConverter(NWBConverter):
             yearfirst=True,
             dayfirst=True
         )
-        metadata = dict(
+        metadata = super().get_metadata()
+        metadata.update(
             NWBFile=dict(
                 identifier=session_id,
                 session_start_time=session_start.astimezone(),
@@ -42,6 +43,4 @@ class SyntalosNWBConverter(NWBConverter):
             SyntalosEvent=dict(),
             SyntalosImage=dict()
         )
-        # Temporary, depending on how quickly the metadata refactor takes on nwb-conversion-tools
-        metadata.update(IntanRecording=self.data_interface_objects['IntanRecording'].get_metadata())
         return metadata
