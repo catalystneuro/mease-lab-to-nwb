@@ -15,10 +15,7 @@ if base_path.is_dir():
     input_args = dict(
         IntanRecording=dict(
             file_path=intan_file_path
-        ),
-        # IntanAccelerometer=dict(
-        #     file_path=intan_file_path
-        # )
+        )
     )
 
     converter = SyntalosNWBConverter(**input_args)
