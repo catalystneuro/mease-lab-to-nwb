@@ -25,7 +25,7 @@ if base_path.is_dir():
     metadata = converter.get_metadata()
 
     # Session specific metadata
-    metadata['NWBFile'].update(session_description="")
+    metadata['NWBFile'].update(session_description="Session description.")
 
     converter.run_conversion(
         nwbfile_path=str(nwbfile_path.absolute()),
