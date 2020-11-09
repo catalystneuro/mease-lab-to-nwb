@@ -35,7 +35,6 @@ class SyntalosNWBConverter(NWBConverter):
             Subject=dict(
                 subject_id=subject_id
             ),
-            IntanRecording=None,
             # IntanAccelerometer=dict()
         )
         # Temporary, depending on how quickly the metadata refactor takes on nwb-conversion-tools
