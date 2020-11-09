@@ -4,16 +4,17 @@ import pandas as pd
 from nwb_conversion_tools.basedatainterface import BaseDataInterface
 from pynwb import NWBFile
 from ndx_events import LabeledEvents, AnnotatedEventsTable
+from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 
 class SyntalosEventInterface(BaseDataInterface):
-    """Description here."""
+    """Conversion class for Syntalos Events."""
 
     @classmethod
     def get_input_schema(cls):
         """Return a partial JSON schema indicating the input arguments and their types."""
         return dict(
-            required=['folder_path'],
+            required=['file_path'],
             properties=dict(
                 file_path=dict(type='string')
             )
@@ -38,45 +39,38 @@ class SyntalosEventInterface(BaseDataInterface):
         unique_events = set(event_labels)
         events_map = {event: n for n, event in enumerate(unique_events)}
         event_data = [events_map[event] for event in event_labels]
+        reward_events = [pd.isna(x) for x in events_data['Unnamed: 1']]
 
         # Custom labeled events
         events = LabeledEvents(
             name='LabeledEvents',
             description='Events from the experiment.',
-            timestamps=event_timestamps,
+            timestamps=H5DataIO(event_timestamps, compression="gzip"),
             resolution=np.nan,
-            data=event_data,
-            labels=event_labels
+            data=H5DataIO(event_data, compression="gzip"),
+            labels=list(unique_events)  # does not suppoort compression
         )
         nwbfile.add_acquisition(events)
 
         # Reward events
-        # create a new AnnotatedEventsTable type to hold annotated events
         # annotated_events = AnnotatedEventsTable(
         #     name='EventTable',
-        #     description='annotated events from my experiment',
-        #     resolution=1e-5  # resolution of the timestamps, i.e., smallest possible difference between timestamps
+        #     description='Events from the experiment.',
+        #     resolution=np.nan
         # )
-        # # add a custom indexed (ragged) column to represent whether each event time was a bad event
         # annotated_events.add_column(
-        #     name='bad_event',
+        #     name='reward',
         #     description='whether each event time should be excluded',
         #     index=True
         # )
-        # # add an event type (row) to the AnnotatedEventsTable instance
         # annotated_events.add_event_type(
         #     label='Reward',
         #     event_description='Times when the subject received reward.',
-        #     event_times=[1., 2., 3.],
-        #     bad_event=[False, False, True],
-        #     id=3
+        #     event_times=event_timestamps,  # does not support compression
+        #     reward=H5DataIO(reward_events, compression="gzip")
         # )
-
-        # # create a processing module in the NWB file to hold processed events data
         # events_module = nwbfile.create_processing_module(
-        #     name='events',
-        #     description='processed event data'
+        #     name='Events',
+        #     description='Processed event data.'
         # )
-        
-        # # add the AnnotatedEventsTable instance to the processing module
         # events_module.add(annotated_events)
