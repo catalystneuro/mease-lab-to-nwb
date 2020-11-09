@@ -4,8 +4,8 @@ from dateparser import parse as dateparse
 import toml
 
 from nwb_conversion_tools import NWBConverter
-from syntaloseventinterface import SyntalosEventInterface
-from syntalosimageinterface import SyntalosImageInterface
+from .syntaloseventinterface import SyntalosEventInterface
+from .syntalosimageinterface import SyntalosImageInterface
 
 
 class SyntalosNWBConverter(NWBConverter):
