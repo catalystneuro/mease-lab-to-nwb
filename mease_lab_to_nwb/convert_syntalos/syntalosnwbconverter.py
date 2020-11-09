@@ -37,6 +37,4 @@ class SyntalosNWBConverter(NWBConverter):
             ),
             # IntanAccelerometer=dict()
         )
-        # Temporary, depending on how quickly the metadata refactor takes on nwb-conversion-tools
-        metadata.update(IntanRecording=self.data_interface_objects['IntanRecording'].get_metadata())
         return metadata
