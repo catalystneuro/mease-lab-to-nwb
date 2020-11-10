@@ -1,30 +1,35 @@
 """Authors: Cody Baker and Ben Dichter."""
-import os
-from datetime import datetime, timedelta
+from pathlib import Path
+from dateparser import parse as dateparse
+import toml
 
-from dateutil.parser import parse as dateparse
-from isodate import duration_isoformat
-# TODO: Need to add IntanRecordingInterface over on nwb-conversion-tools, or use Ben's suggested auto-class creation function
 from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
-
-from ..utils import convert_mat_file_to_dict
 
 
 class SyntalosNWBConverter(NWBConverter):
-    data_interface_classes = dict()
+    """Primary conversion class for Syntalos."""
 
-    def __init__(self, **input_args):
-        super().__init__(**input_args)
+    data_interface_classes = dict(
+        IntanRecording=IntanRecordingInterface
+    )
 
     def get_metadata(self):
-
-        return dict(
+        """Auto-populate as much metadata as possible."""
+        intan_file_path = Path(self.data_interface_objects['IntanRecording'].input_args['file_path'])
+        session_id = intan_file_path.stem
+        subject_id = toml.load(intan_file_path.parent.parent / "attributes.toml")['subject_id']
+        session_start = dateparse(date_string=session_id[-13:], date_formats=["%y%m%d_%H%M%S"])
+        metadata = super().get_metadata()
+        metadata.update(
             NWBFile=dict(
-                #identifier="fill_me",
-                #session_start_time=datetime.datetime("fill me"),
-                #session_id="fill me",
-                institution="Heidelberg",
-                #lab="fill me"
+                identifier=session_id,
+                session_start_time=session_start.astimezone(),
+                session_id=session_id,
+                institution="EMBL - Heidelberg",
+                lab="Mease"
             ),
-            Subject=dict(),
+            Subject=dict(
+                subject_id=subject_id
+            )
         )
+        return metadata

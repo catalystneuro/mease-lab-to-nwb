@@ -4,3 +4,5 @@ pynwb
 h5py
 isodate
 sonpy
+toml
+dateparser
