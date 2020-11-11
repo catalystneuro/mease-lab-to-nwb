@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from nwb_conversion_tools.basedatainterface import BaseDataInterface
 from pynwb import NWBFile
-from ndx_events import LabeledEvents, AnnotatedEventsTable
+from ndx_events import LabeledEvents
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 
@@ -43,7 +43,6 @@ class SyntalosEventInterface(BaseDataInterface):
         unique_events = set(event_labels)
         events_map = {event: n for n, event in enumerate(unique_events)}
         event_data = [events_map[event] for event in event_labels]
-        reward_events = [pd.isna(x) for x in events_data['Unnamed: 1']]
 
         # Custom labeled events
         events = LabeledEvents(
@@ -55,26 +54,3 @@ class SyntalosEventInterface(BaseDataInterface):
             labels=list(unique_events)  # does not suppoort compression
         )
         nwbfile.add_acquisition(events)
-
-        # Reward events
-        # annotated_events = AnnotatedEventsTable(
-        #     name='EventTable',
-        #     description='Events from the experiment.',
-        #     resolution=np.nan
-        # )
-        # annotated_events.add_column(
-        #     name='reward',
-        #     description='whether each event time should be excluded',
-        #     index=True
-        # )
-        # annotated_events.add_event_type(
-        #     label='Reward',
-        #     event_description='Times when the subject received reward.',
-        #     event_times=event_timestamps,  # does not support compression
-        #     reward=H5DataIO(reward_events, compression="gzip")
-        # )
-        # events_module = nwbfile.create_processing_module(
-        #     name='Events',
-        #     description='Processed event data.'
-        # )
-        # events_module.add(annotated_events)
