@@ -1,7 +1,7 @@
 """Authors: Alessio Buccino, Cody Baker, Szonja Weigl, and Ben Dichter."""
 from pathlib import Path
 
-from syntalosnwbconverter import SyntalosNWBConverter
+from .syntalosnwbconverter import SyntalosNWBConverter
 
 
 base_path = Path("D:/Syntalos/Latest Syntalos Recording _20200730")
