@@ -24,4 +24,4 @@ if base_path.is_dir():
     )
     converter = SyntalosNWBConverter(**input_args)
     metadata = converter.get_metadata()
-    converter.run_conversion(nwbfile_path=str(nwbfile_path.absolute()), metadata_dict=metadata, **conversion_options)
+    converter.run_conversion(nwbfile_path=str(nwbfile_path.absolute()), metadata_dict=metadata, conversion_options=conversion_options)
