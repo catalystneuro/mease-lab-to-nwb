@@ -4,8 +4,8 @@ from dateparser import parse as dateparse
 import toml
 
 
-from .syntaloseventinterface import SyntalosEventInterface
-from .syntalosimageinterface import SyntalosImageInterface
+from syntaloseventinterface import SyntalosEventInterface
+from syntalosimageinterface import SyntalosImageInterface
 
 from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
 
@@ -27,14 +27,14 @@ class SyntalosNWBConverter(NWBConverter):
 
         session_start = dateparse(date_string=session_id[-13:], date_formats=["%y%m%d_%H%M%S"])
         metadata = super().get_metadata()
+        metadata['NWBFile'].update(
+            identifier=session_id,
+            session_start_time=session_start.astimezone(),
+            session_id=session_id,
+            institution="EMBL - Heidelberg",
+            lab="Mease"
+        )
         metadata.update(
-            NWBFile=dict(
-                identifier=session_id,
-                session_start_time=session_start.astimezone(),
-                session_id=session_id,
-                institution="EMBL - Heidelberg",
-                lab="Mease"
-            ),
             Subject=dict(
                 subject_id=subject_id
             )

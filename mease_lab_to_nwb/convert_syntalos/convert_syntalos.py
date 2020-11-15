@@ -1,7 +1,7 @@
 """Authors: Alessio Buccino, Cody Baker, Szonja Weigl, and Ben Dichter."""
 from pathlib import Path
 
-from .syntalosnwbconverter import SyntalosNWBConverter
+from syntalosnwbconverter import SyntalosNWBConverter
 
 
 base_path = Path("D:/Syntalos/Latest Syntalos Recording _20200730")
@@ -16,12 +16,13 @@ if base_path.is_dir():
         SyntalosImage=dict(folder_path=video_folder_path),
         IntanRecording=dict(file_path=intan_file_path, dtype="uint16")
     )
+    conversion_options = dict(stub_test=True)
 
-    conversion_options = dict(
-        SyntalosEvent=None,
-        SyntalosImage=None,
-        IntanRecording=dict(stub_test=True)
-    )
     converter = SyntalosNWBConverter(**input_args)
     metadata = converter.get_metadata()
-    converter.run_conversion(nwbfile_path=str(nwbfile_path.absolute()), metadata_dict=metadata, **conversion_options)
+    metadata['NWBFile'].update(session_description="Enter session description here.")
+    converter.run_conversion(
+        nwbfile_path=str(nwbfile_path.absolute()),
+        metadata_dict=metadata,
+        conversion_options=conversion_options
+    )
