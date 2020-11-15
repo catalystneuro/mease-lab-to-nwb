@@ -5,7 +5,6 @@ from .syntalosnwbconverter import SyntalosNWBConverter
 
 
 base_path = Path("D:/Syntalos/Latest Syntalos Recording _20200730")
-# originally, this intan file had a -002 attached to the end before the .rhd, but spikeextractors complained
 intan_file_path = base_path / "intan-signals" / "169d_data_200714_121455.rhd"
 event_file_path = base_path / "events" / "table.csv"
 video_folder_path = base_path / "videos" / "TIS Camera"
