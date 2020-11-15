@@ -18,8 +18,8 @@ if base_path.is_dir():
     )
 
     conversion_options = dict(
-        SyntalosEvent=dict(),
-        SyntalosImage=dict(),
+        SyntalosEvent=None,
+        SyntalosImage=None,
         IntanRecording=dict(stub_test=True)
     )
     converter = SyntalosNWBConverter(**input_args)
