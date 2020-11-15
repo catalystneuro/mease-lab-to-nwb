@@ -17,7 +17,7 @@ if base_path.is_dir():
         SyntalosImage=dict(folder_path=video_folder_path),
         IntanRecording=dict(file_path=intan_file_path, dtype="uint16")
     )
-    
+
     conversion_options = dict(
         SyntalosEvent=dict(),
         SyntalosImage=dict(),
