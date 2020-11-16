@@ -46,6 +46,6 @@ class SyntalosImageInterface(BaseDataInterface):
             description="Videos recorded by TIS camera.",
             format="external",
             external_file=video_file_path_list,
-            timestamps=H5DataIO(video_timestamps[0], compression="gzip")
+            timestamps=H5DataIO(np.concatenate(video_timestamps), compression="gzip")
         )
         nwbfile.add_acquisition(videos)
