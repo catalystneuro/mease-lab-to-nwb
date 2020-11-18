@@ -25,7 +25,7 @@ def get_block_info(shape, size):
 class SyntalosRecordingInterface(IntanRecordingInterface):
     """Conversion class for Syntalos Recording + Accelerometer."""
 
-    def convert_data(self, nwbfile: NWBFile, metadata_dict: dict, add_accelerometer: bool = True):
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict, add_accelerometer: bool = True):
         """
         Primary conversion function for Syntalos recordings.
 
@@ -38,7 +38,7 @@ class SyntalosRecordingInterface(IntanRecordingInterface):
         add_accelerometer: bool, optional
             If true, adds the separate recording channels for accelerometer information. The default is True.
         """
-        super().convert_data(nwbfile=nwbfile, metadata_dict=metadata_dict)
+        super().convert_data(nwbfile=nwbfile, metadata=metadata)
         if add_accelerometer:
             accel_channels = np.array([ch for ch in self.recording_extractor._recording._anas_chan
                                        if 'AUX' in ch['name']])
