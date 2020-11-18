@@ -7,7 +7,7 @@ from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
 
 from .syntaloseventinterface import SyntalosEventInterface
 from .syntalosimageinterface import SyntalosImageInterface
-
+from .syntalosrecordinginterface import SyntalosRecordingInterface
 
 class SyntalosNWBConverter(NWBConverter):
     """Primary conversion class for Syntalos."""
@@ -15,12 +15,12 @@ class SyntalosNWBConverter(NWBConverter):
     data_interface_classes = dict(
         SyntalosEvent=SyntalosEventInterface,
         SyntalosImage=SyntalosImageInterface,
-        IntanRecording=IntanRecordingInterface
+        SyntalosRecording=SyntalosRecordingInterface
     )
 
     def get_metadata(self):
         """Auto-populate as much metadata as possible."""
-        intan_file_path = Path(self.data_interface_objects['IntanRecording'].source_data['file_path'])
+        intan_file_path = Path(self.data_interface_objects['SyntalosRecording'].source_data['file_path'])
         session_id = intan_file_path.stem
         subject_id = toml.load(intan_file_path.parent.parent / "attributes.toml")['subject_id']
 
