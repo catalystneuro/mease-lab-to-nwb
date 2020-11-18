@@ -3,7 +3,6 @@ from pathlib import Path
 
 from .syntalosnwbconverter import SyntalosNWBConverter
 
-
 base_path = Path("D:/Syntalos/Latest Syntalos Recording _20200730")
 intan_file_path = base_path / "intan-signals" / "169d_data_200714_121455.rhd"
 event_file_path = base_path / "events" / "table.csv"
@@ -20,7 +19,7 @@ if base_path.is_dir():
 
     converter = SyntalosNWBConverter(**input_args)
     metadata = converter.get_metadata()
-    metadata['NWBFile'].update(session_description="Enter session description here.")
+    # metadata['NWBFile'].update(session_description="Enter session description here.")
     converter.run_conversion(
         nwbfile_path=str(nwbfile_path.absolute()),
         metadata_dict=metadata,

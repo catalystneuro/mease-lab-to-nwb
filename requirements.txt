@@ -6,3 +6,4 @@ isodate
 sonpy
 toml
 dateparser
+ndx-events

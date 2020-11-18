@@ -1,14 +1,13 @@
 """Authors: Cody Baker and Ben Dichter."""
 from pathlib import Path
-from dateparser import parse as dateparse
+
 import toml
+from dateparser import parse as dateparse
+from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
 
 from .syntaloseventinterface import SyntalosEventInterface
 from .syntalosimageinterface import SyntalosImageInterface
 from .syntalosrecordinginterface import SyntalosRecordingInterface
-
-from nwb_conversion_tools import NWBConverter
-
 
 class SyntalosNWBConverter(NWBConverter):
     """Primary conversion class for Syntalos."""
