@@ -15,15 +15,11 @@ def all_equal(lst: list):
 def get_block_info(shape, size):
     """Calculate block information in binary file."""
     assert len(shape) == 2, "The shape of the blocks in the binary file must have two dimensions!"
-
-    i_start = 0
-    i_stop = size
     block_size = shape[1]
-    block_start = 0
     block_stop = size // block_size + 1
-    sl0 = i_start % block_size
-    sl1 = sl0 + (i_stop - i_start)
-    return block_size, block_start, block_stop, sl0, sl1
+    sl0 = block_size
+    sl1 = sl0 + size
+    return block_stop, sl0, sl1
 
 
 class SyntalosRecordingInterface(IntanRecordingInterface):
@@ -61,12 +57,13 @@ class SyntalosRecordingInterface(IntanRecordingInterface):
                 raise NotImplementedError("Unequal auxiliary channel sampling rates are not yet supported.")
 
             def data_generator(recording, accel_channels, channels_ids):
-                accel_shape = recording._recording._raw_data[accel_channels[0]['name']].shape
-                accel_size = recording._recording._raw_data[accel_channels[0]['name']].size
-                block_size, block_start, block_stop, sl0, sl1 = get_block_info(accel_shape, accel_size)
+                block_stop, sl0, sl1 = get_block_info(
+                    shape=recording._recording._raw_data[accel_channels[0]['name']].shape,
+                    size=recording._recording._raw_data[accel_channels[0]['name']].size
+                )
                 for id in channels_ids:
                     blocked_data = recording._recording._raw_data[accel_channels[id]['name']]
-                    data = blocked_data[block_start:block_stop].flatten()[sl0:sl1]
+                    data = blocked_data[0:block_stop].flatten()[sl0:sl1]
                     yield data
             accel_data = H5DataIO(
                 DataChunkIterator(
