@@ -13,7 +13,7 @@ class SyntalosImageInterface(BaseDataInterface):
     """Conversion class for Syntalos Images."""
 
     @classmethod
-    def get_input_schema(cls):
+    def get_source_schema(cls):
         """Return a partial JSON schema indicating the input arguments and their types."""
         return dict(
             required=['folder_path'],
@@ -22,7 +22,7 @@ class SyntalosImageInterface(BaseDataInterface):
             )
         )
 
-    def convert_data(self, nwbfile: NWBFile, metadata_dict: dict):
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict):
         """
         Primary conversion function for the custom Syntalos image interface.
 
@@ -33,7 +33,7 @@ class SyntalosImageInterface(BaseDataInterface):
         stub_test : bool, optional
             If true, truncates all data to a small size for fast testing. The default is False.
         """
-        video_folder = Path(self.input_args['folder_path'])
+        video_folder = Path(self.source_data['folder_path'])
         video_file_path_list = [str(x.absolute()) for x in video_folder.iterdir() if x.suffix == ".mkv"]
 
         video_timestamps = list()
