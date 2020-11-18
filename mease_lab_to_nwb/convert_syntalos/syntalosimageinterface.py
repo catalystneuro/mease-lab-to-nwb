@@ -1,11 +1,12 @@
 """Authors: Cody Baker and Ben Dichter."""
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
+from hdmf.backends.hdf5.h5_utils import H5DataIO
 from nwb_conversion_tools.basedatainterface import BaseDataInterface
 from pynwb import NWBFile
 from pynwb.image import ImageSeries
-from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 
 class SyntalosImageInterface(BaseDataInterface):

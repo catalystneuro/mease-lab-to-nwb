@@ -1,10 +1,10 @@
 """Authors: Cody Baker and Ben Dichter."""
 import numpy as np
 import pandas as pd
+from hdmf.backends.hdf5.h5_utils import H5DataIO
+from ndx_events import LabeledEvents
 from nwb_conversion_tools.basedatainterface import BaseDataInterface
 from pynwb import NWBFile
-from ndx_events import LabeledEvents
-from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 
 class SyntalosEventInterface(BaseDataInterface):
