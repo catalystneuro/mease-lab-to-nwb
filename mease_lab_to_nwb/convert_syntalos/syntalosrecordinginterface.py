@@ -3,6 +3,7 @@ import numpy as np
 
 from pynwb import NWBFile, TimeSeries
 from nwb_conversion_tools import IntanRecordingInterface
+from hdmf.data_utils import DataChunkIterator
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 
@@ -35,18 +36,36 @@ class SyntalosRecordingInterface(IntanRecordingInterface):
             if all_equal(channel_conversion):
                 channel_conversion = np.ones(len(accel_channels))
                 conversion = channel_conversion[0]
-            if not all_equal([[x['offset'] for x in accel_channels], 0]):
-                raise NotImplementedError("Unable to support non-zero offsets for auxiliary channel data.")
             accel_channel_units = [x['units'] for x in accel_channels]
+            accel_channel_sampling_rate = [x['sampling_rate'] for x in accel_channels]
+
+            if not all([x['offset'] == 0 for x in accel_channels]):
+                raise NotImplementedError("Unable to support non-zero offsets for auxiliary channel data.")
             if not all_equal(accel_channel_units):
                 raise NotImplementedError("Unequal auxiliary channel unit types are not yet supported.")
-            accel_channel_sampling_rate = [x['sampling_rate'] for x in accel_channels]
             if not all_equal(accel_channel_sampling_rate):
                 raise NotImplementedError("Unequal auxiliary channel sampling rates are not yet supported.")
+
+            def data_generator(recording, accel_channels, channels_ids):
+                #  generates data chunks for iterator
+                for id in channels_ids:
+                    # TODO: _read_analog is not compatible with the 'alternative' channels in intan. Need to
+                    # use raw data directly
+                    data = recording._recording._read_analog(
+                        channels=[accel_channels[id]],
+                        dtype="uint16"
+                    ).flatten()
+                    yield data
             accel_data = H5DataIO(
-                self.recording_extractor._recording._read_analog(
-                    channels=accel_channels,
-                    dtype="uint16"
+                DataChunkIterator(
+                    data=data_generator(
+                        recording=self.recording_extractor,
+                        accel_channels=accel_channels,
+                        channels_ids=list(range(len(accel_channels)))
+                    ),
+                    iter_axis=1,
+                    # TODO: add maxshape with proper values
+                    # maxshape=(self.recording_extractor.get_num_frames(), recording.get_num_channels())
                 ),
                 compression='gzip'
             )
@@ -62,4 +81,4 @@ class SyntalosRecordingInterface(IntanRecordingInterface):
                     conversion=conversion
                 )
             )
-            # TODO: add DataChunkIterator? Also investigate if this can all be memmaped in conjunction with that...
+            # TODO: investigate if this can all be memmaped in conjunction with DataChunkIterator
