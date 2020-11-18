@@ -3,11 +3,11 @@ from pathlib import Path
 from dateparser import parse as dateparse
 import toml
 
-
 from .syntaloseventinterface import SyntalosEventInterface
 from .syntalosimageinterface import SyntalosImageInterface
+from .syntalosrecordinginterface import SyntalosRecordingInterface
 
-from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
+from nwb_conversion_tools import NWBConverter
 
 
 class SyntalosNWBConverter(NWBConverter):
@@ -16,7 +16,7 @@ class SyntalosNWBConverter(NWBConverter):
     data_interface_classes = dict(
         SyntalosEvent=SyntalosEventInterface,
         SyntalosImage=SyntalosImageInterface,
-        IntanRecording=IntanRecordingInterface
+        SyntalosRecording=SyntalosRecordingInterface
     )
 
     def get_metadata(self):

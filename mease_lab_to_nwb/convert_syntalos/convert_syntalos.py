@@ -14,9 +14,9 @@ if base_path.is_dir():
     input_args = dict(
         SyntalosEvent=dict(file_path=event_file_path),
         SyntalosImage=dict(folder_path=video_folder_path),
-        IntanRecording=dict(file_path=intan_file_path, dtype="uint16")
+        SyntalosRecording=dict(file_path=intan_file_path, dtype="uint16")
     )
-    conversion_options = dict(stub_test=True)
+    conversion_options = dict(stub_test=True, add_accelerometer=True)
 
     converter = SyntalosNWBConverter(**input_args)
     metadata = converter.get_metadata()
