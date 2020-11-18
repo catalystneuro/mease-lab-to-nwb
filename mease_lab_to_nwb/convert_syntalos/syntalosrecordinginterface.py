@@ -12,6 +12,20 @@ def all_equal(lst: list):
     return len(set(lst)) == 1
 
 
+def get_block_info(shape, size):
+    """Calculate block information in binary file."""
+    assert len(shape) == 2, "The shape of the blocks in the binary file must have two dimensions!"
+
+    i_start = 0
+    i_stop = size
+    block_size = shape[1]
+    block_start = 0
+    block_stop = size // block_size + 1
+    sl0 = i_start % block_size
+    sl1 = sl0 + (i_stop - i_start)
+    return block_size, block_start, block_stop, sl0, sl1
+
+
 class SyntalosRecordingInterface(IntanRecordingInterface):
     """Conversion class for Syntalos Recording + Accelerometer."""
 
@@ -47,14 +61,12 @@ class SyntalosRecordingInterface(IntanRecordingInterface):
                 raise NotImplementedError("Unequal auxiliary channel sampling rates are not yet supported.")
 
             def data_generator(recording, accel_channels, channels_ids):
-                #  generates data chunks for iterator
+                accel_shape = recording._recording._raw_data[accel_channels[0]['name']].shape
+                accel_size = recording._recording._raw_data[accel_channels[0]['name']].size
+                block_size, block_start, block_stop, sl0, sl1 = get_block_info(accel_shape, accel_size)
                 for id in channels_ids:
-                    # TODO: _read_analog is not compatible with the 'alternative' channels in intan. Need to
-                    # use raw data directly
-                    data = recording._recording._read_analog(
-                        channels=[accel_channels[id]],
-                        dtype="uint16"
-                    ).flatten()
+                    blocked_data = recording._recording._raw_data[accel_channels[id]['name']]
+                    data = blocked_data[block_start:block_stop].flatten()[sl0:sl1]
                     yield data
             accel_data = H5DataIO(
                 DataChunkIterator(
@@ -77,7 +89,7 @@ class SyntalosRecordingInterface(IntanRecordingInterface):
                     rate=accel_channel_sampling_rate[0],
                     unit=accel_channel_units[0],
                     resolution=np.nan,
-                    channel_conversion=channel_conversion,  # not supported for TimeSeries?
+                    #channel_conversion=channel_conversion,  # not supported for TimeSeries?
                     conversion=conversion
                 )
             )
