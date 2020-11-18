@@ -11,7 +11,7 @@ class SyntalosEventInterface(BaseDataInterface):
     """Conversion class for Syntalos Events."""
 
     @classmethod
-    def get_input_schema(cls):
+    def get_source_schema(cls):
         """Return a partial JSON schema indicating the input arguments and their types."""
         return dict(
             required=['file_path'],
@@ -20,7 +20,7 @@ class SyntalosEventInterface(BaseDataInterface):
             )
         )
 
-    def convert_data(self, nwbfile: NWBFile, metadata_dict: dict):
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict):
         """
         Primary conversion function for the custom Syntalos event interface.
 
@@ -31,7 +31,7 @@ class SyntalosEventInterface(BaseDataInterface):
         stub_test : bool, optional
             If true, truncates all data to a small size for fast testing. The default is False.
         """
-        event_file = self.input_args['file_path']
+        event_file = self.source_data['file_path']
         events_data = pd.read_csv(event_file, header=0)
         split_first_col = [x.split(";") for x in events_data['Time;Tag;Description']]
         event_timestamps = [int(x[0]) for x in split_first_col]
