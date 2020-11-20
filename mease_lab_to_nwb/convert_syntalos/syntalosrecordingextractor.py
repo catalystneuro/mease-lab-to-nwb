@@ -18,42 +18,39 @@ class SyntalosRecordingExtractor(se.IntanRecordingExtractor):
             rhd_file = rhd_files[0]
             tsync_files = [p for p in intan_signal.iterdir() if p.suffix == '.tsync']
         elif file_or_folder_path.is_dir():
-            assert file_or_folder_path.suffix == '.rhd'
+            assert file_or_folder_path.suffix == '.rhd', "The provided file is not an '.rhd' file"
             tsync_files = [p for p in file_or_folder_path.parent.iterdir() if p.suffix == '.tsync']
             rhd_file = file_or_folder_path
         else:
             raise AttributeError(f"{file_or_folder_path.name} is not a Syntalos folder or an rhd file")
 
         super().__init__(rhd_file)
-        self._times = None
+        self._timestamps = None
 
         if len(tsync_files) == 0:
             self._sync = False
         elif len(tsync_files) > 1:
-            # TODO find file with same stem
-            raise NotImplementedError
+            raise NotImplementedError("Multiple tsync files are not implemented.")
         else:
-            self._sync = True
             try:
                 tsync = TSyncFile(tsync_files[0])
             except:
                 try:
                     tsync = LegacyTSyncFile(tsync_files[0])
                 except:
-                    self._sync = False
-            if self._sync:
-                self.sync_map = tsync.times
-                self.sync_times()
+                    raise RuntimeError("The .tsync file could not be parsed.")
+            self.sync_map = tsync.times
+            self._sync_times()
 
         self._kwargs = {'folder_path': str(file_or_folder_path.absolute())}
 
     def frame_to_time(self, frame):
-        return self._times[frame]
+        return self._timestamps[frame]
 
     def time_to_frame(self, time):
-        return np.searchsorted(self._times, time).astype('int64')
+        return np.searchsorted(self._timestamps, time).astype('int64')
 
-    def sync_times(self):
+    def _sync_times(self):
         tv_usec = np.arange(self.get_num_frames(), dtype=np.float64) / self.get_sampling_frequency() * 1E6
         tv_adj_usec = np.arange(self.get_num_frames(), dtype=np.float64) / self.get_sampling_frequency() * 1E6
 
@@ -69,4 +66,4 @@ class SyntalosRecordingExtractor(se.IntanRecordingExtractor):
                 idx = np.where(tv_usec > sync[0])[0]
             tv_adj_usec[idx] -= offset_usec
 
-        self._times = tv_adj_usec / 1E6
+        self._timestamps = tv_adj_usec / 1E6
