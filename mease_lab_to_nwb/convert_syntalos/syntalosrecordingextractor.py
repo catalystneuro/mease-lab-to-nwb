@@ -7,7 +7,7 @@ from edlio.dataio.tsyncfile import TSyncFile, LegacyTSyncFile
 
 def SyntalosRecordingExtractor(folder_path):
     """
-    Function that routs the right parameters to a SyntalosSingleRecordingExtractor or a SyntalosMultiRecordingExtractor
+    Function that routes the right parameters to a SyntalosSingleRecordingExtractor or a SyntalosMultiRecordingExtractor
 
     Parameters
     ----------
