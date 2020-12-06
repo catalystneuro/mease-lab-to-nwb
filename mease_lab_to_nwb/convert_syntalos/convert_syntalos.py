@@ -1,7 +1,7 @@
 """Authors: Alessio Buccino, Cody Baker, Szonja Weigl, and Ben Dichter."""
 from pathlib import Path
 
-from .syntalosnwbconverter import SyntalosNWBConverter
+from syntalosnwbconverter import SyntalosNWBConverter
 
 base_path = Path("D:/Syntalos/Latest Syntalos Recording _20200730")
 intan_folder_path = base_path / "intan-signals"
@@ -15,7 +15,7 @@ source_data = dict(
     SyntalosRecording=dict(folder_path=str(intan_folder_path.absolute()))
 )
 conversion_options = dict(
-    SyntalosRecording=dict(stub_test=True)
+    SyntalosRecording=dict(stub_test=True, use_timestamps=True)
 )
 
 converter = SyntalosNWBConverter(source_data)

@@ -7,7 +7,7 @@ from nwb_conversion_tools.baserecordingextractorinterface import BaseRecordingEx
 from hdmf.data_utils import DataChunkIterator
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
-from .syntalosrecordingextractor import SyntalosRecordingExtractor
+from syntalosrecordingextractor import SyntalosRecordingExtractor
 
 
 def all_equal(lst: list):
@@ -16,8 +16,13 @@ def all_equal(lst: list):
 
 
 # TODO: allow buffer_mb to be specified top-down (currently defaulting)
-def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = False, buffer_mb: int = 500):
-    """Add accelerometer data from a single rhd file to the NWBFile."""
+def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = False, buffer_mb: int = 500,
+                             use_timestamps: bool = False):
+    """
+    Add accelerometer data from a single rhd file to the NWBFile.
+
+    Expects full timestamps from the higher-frequency recording extractor.
+    """
     accel_channels = np.array([ch for ch in recording._recordings[0]._recording._anas_chan if 'AUX' in ch['name']])
     channel_conversion = [x['gain'] for x in accel_channels]
     accel_channel_units = [x['units'] for x in accel_channels]
@@ -35,6 +40,7 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
         raise NotImplementedError("Writing accelerometer data for non-memory maps is not supported!")
 
     conversion = channel_conversion[0]
+    accel_sampling_rate = accel_channel_sampling_rate[0]
     all_memmaps = [
         [x._recording._raw_data[accel_channels[j]['name']].flatten() for j in range(accel_channels.size)]
         for x in recording._recordings
@@ -61,17 +67,24 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
         data=all_accel_data,
         buffer_size=buffer_size
     )
-    nwbfile.add_acquisition(
-        TimeSeries(
-            name="Accelerometer",
-            description="Data recorded from auxiliary channels from an intan device, tracking acceleration.",
-            data=H5DataIO(accel_data, compression="gzip"),
-            rate=accel_channel_sampling_rate[0],  # TODO: replace this using tsync mapping?
-            unit=accel_channel_units[0],
-            resolution=np.nan,
-            conversion=conversion
-        )
+    tseries_kwargs = dict(
+        name="Accelerometer",
+        description="Data recorded from auxiliary channels from an intan device, tracking acceleration.",
+        data=H5DataIO(accel_data, compression="gzip"),
+        unit=accel_channel_units[0],
+        resolution=np.nan,
+        conversion=conversion
     )
+
+    if not use_timestamps:
+        tseries_kwargs.update(rate=accel_sampling_rate)
+    else:
+        accel_timestamps = recording.frame_to_time(
+            recording.time_to_frame(np.arange(0, all_accel_data.shape[0]) / accel_sampling_rate)
+        )
+        tseries_kwargs.update(timestamps=H5DataIO(accel_timestamps, compression="gzip"))
+
+    nwbfile.add_acquisition(TimeSeries(**tseries_kwargs))
 
 
 class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
@@ -95,4 +108,9 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
         """
         super().run_conversion(nwbfile=nwbfile, metadata=metadata, stub_test=stub_test, use_timestamps=use_timestamps)
         if add_accelerometer:
-            write_accelerometer_data(nwbfile=nwbfile, recording=self.recording_extractor, stub_test=stub_test)
+            write_accelerometer_data(
+                nwbfile=nwbfile,
+                recording=self.recording_extractor,
+                stub_test=stub_test,
+                use_timestamps=use_timestamps
+            )
