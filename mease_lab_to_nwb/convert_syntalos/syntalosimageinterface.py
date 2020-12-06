@@ -2,6 +2,7 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
+from typing import Optional
 
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from nwb_conversion_tools.basedatainterface import BaseDataInterface
@@ -23,7 +24,7 @@ class SyntalosImageInterface(BaseDataInterface):
         )
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict, use_timestamps: bool = False,
-                       timestamps: list = None):
+                       timestamps: Optional[list] = None):
         """
         Primary conversion function for the custom Syntalos image interface.
 
@@ -35,8 +36,8 @@ class SyntalosImageInterface(BaseDataInterface):
             If true, truncates all data to a small size for fast testing. The default is False.
         use_timestamps : bool, optional
             If true, synchronizes the reported video timestamps with the tsync file from the recording
-        recording : RecordingExtractor, optional
-            Only used (and required) if use_timestamps is true
+        timestamps : list, optional
+            Only used (and required) if use_timestamps is true. Contains the tsync timestamps from the recording.
         """
         video_folder = Path(self.source_data['folder_path'])
         video_file_path_list = [str(x.absolute()) for x in video_folder.iterdir() if x.suffix == ".mkv"]
