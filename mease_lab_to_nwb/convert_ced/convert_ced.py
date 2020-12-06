@@ -1,31 +1,35 @@
 """Authors: Cody Baker and Ben Dichter."""
 from pathlib import Path
+from spikeextractors import CEDRecordingExtractor
 
-from .cednwbconverter import CEDNWBConverter
+from cednwbconverter import CEDNWBConverter
 
-n_jobs = 1  # number of parallel streams to run
 
-base_path = Path("D:/CED_example_data")
-ced_file_path = base_path / "m365_pt1_590-1190secs-001.smrx"
+base_path = Path("D:/CED_example_data/Short example")
+ced_file_path = base_path / "M113_C4.smrx"
 nwbfile_path = base_path / "CED_stub.nwb"
 
-# Manual list of selected sessions that cause problems with the general functionality
-exlude_sessions = []
-nwbfile_paths = []
+channel_info = CEDRecordingExtractor.get_all_channels_info(ced_file_path)
 
+rhd_channels = []
+for ch, info in channel_info.items():
+    if "Rhd" in info["title"]:
+        rhd_channels.append(ch)
 
-if base_path.is_dir():
-    source_data = dict(
-        CEDRecording=dict(file_path=str(ced_file_path.absolute()), dtype="uint16")
+source_data = dict(
+    CEDRecording=dict(
+        file_path=str(ced_file_path.absolute()),
+        smrx_ch_inds=rhd_channels
     )
-    conversion_options = dict(
-        CEDRecording=dict(stub_test=True)
-    )
+)
+conversion_options = dict(
+    CEDRecording=dict(stub_test=True)
+)
 
-    converter = CEDNWBConverter(source_data)
-    metadata = converter.get_metadata()
-    converter.run_conversion(
-        nwbfile_path=str(nwbfile_path.absolute()),
-        metadata=metadata,
-        conversion_options=conversion_options
-    )
+converter = CEDNWBConverter(source_data)
+metadata = converter.get_metadata()
+converter.run_conversion(
+    nwbfile_path=str(nwbfile_path.absolute()),
+    metadata=metadata,
+    conversion_options=conversion_options
+)
