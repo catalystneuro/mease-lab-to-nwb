@@ -9,15 +9,20 @@ event_file_path = base_path / "events" / "table.csv"
 video_folder_path = base_path / "videos" / "TIS Camera"
 nwbfile_path = base_path / "Syntalos_stub.nwb"
 
+stub_test = True
+use_tsync_timestamps = True
+
+
+# Automatically performs conversion based on above filepaths and options
 source_data = dict(
-    SyntalosEvent=dict(file_path=str(event_file_path.absolute())),
+    # SyntalosEvent=dict(file_path=str(event_file_path.absolute())),
     SyntalosImage=dict(folder_path=str(video_folder_path.absolute())),
     SyntalosRecording=dict(folder_path=str(intan_folder_path.absolute()))
 )
 conversion_options = dict(
-    SyntalosRecording=dict(stub_test=True, use_timestamps=True)
+    SyntalosRecording=dict(stub_test=stub_test, use_timestamps=use_tsync_timestamps),
+    SyntalosImage=dict(use_timestamps=use_tsync_timestamps)
 )
-
 converter = SyntalosNWBConverter(source_data)
 metadata = converter.get_metadata()
 converter.run_conversion(

@@ -53,6 +53,9 @@ class SyntalosRecordingExtractor(MultiRecordingTimeExtractor):
     def time_to_frame(self, time):
         return np.searchsorted(self._timestamps, time).astype('int64')
 
+    def get_timestamps(self):
+        return self._timestamps
+
 
 def _get_timestamps_with_tsync(recording, tsync_file):
     try:

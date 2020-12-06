@@ -3,11 +3,13 @@ from pathlib import Path
 
 import toml
 from dateparser import parse as dateparse
-from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
+
+from nwb_conversion_tools import NWBConverter
 
 from syntaloseventinterface import SyntalosEventInterface
 from syntalosimageinterface import SyntalosImageInterface
 from syntalosrecordinginterface import SyntalosRecordingInterface
+
 
 class SyntalosNWBConverter(NWBConverter):
     """Primary conversion class for Syntalos."""
@@ -19,7 +21,6 @@ class SyntalosNWBConverter(NWBConverter):
     )
 
     def get_metadata(self):
-        """Auto-populate as much metadata as possible."""
         intan_folder_path = Path(self.data_interface_objects['SyntalosRecording'].source_data['folder_path'])
         session_id = [x for x in intan_folder_path.iterdir() if x.suffix == ".rhd"][0].stem
         subject_id = toml.load(intan_folder_path.parent / "attributes.toml")['subject_id']
@@ -38,3 +39,19 @@ class SyntalosNWBConverter(NWBConverter):
             )
         )
         return metadata
+
+    def run_conversion(self, metadata: dict, nwbfile_path: str = None, save_to_file: bool = True,
+                       conversion_options: dict = None):
+        if 'SyntalosImage' in self.data_interface_objects \
+                and conversion_options['SyntalosImage'].get('use_timestamps', False):
+            assert 'SyntalosRecording' in self.data_interface_objects, \
+                "Requesting to use tsync timestamps in SyntalosImageInterface, but no recording is present!"
+            conversion_options['SyntalosImage'].update(
+                timestamps=list(self.data_interface_objects['SyntalosRecording'].recording_extractor.get_timestamps())
+            )
+        super().run_conversion(
+            metadata=metadata,
+            nwbfile_path=nwbfile_path,
+            save_to_file=save_to_file,
+            conversion_options=conversion_options
+        )
