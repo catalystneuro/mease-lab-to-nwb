@@ -5,9 +5,9 @@ import toml
 from dateparser import parse as dateparse
 from nwb_conversion_tools import NWBConverter, IntanRecordingInterface
 
-from syntaloseventinterface import SyntalosEventInterface
-from syntalosimageinterface import SyntalosImageInterface
-from syntalosrecordinginterface import SyntalosRecordingInterface
+from .syntaloseventinterface import SyntalosEventInterface
+from .syntalosimageinterface import SyntalosImageInterface
+from .syntalosrecordinginterface import SyntalosRecordingInterface
 
 class SyntalosNWBConverter(NWBConverter):
     """Primary conversion class for Syntalos."""

@@ -7,7 +7,7 @@ from nwb_conversion_tools.baserecordingextractorinterface import BaseRecordingEx
 from hdmf.data_utils import DataChunkIterator
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
-from syntalosrecordingextractor import SyntalosRecordingExtractor
+from .syntalosrecordingextractor import SyntalosRecordingExtractor
 
 
 def all_equal(lst: list):
