@@ -79,7 +79,8 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
 
     RX = SyntalosRecordingExtractor
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict, stub_test: bool = False, add_accelerometer: bool = True):
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict, stub_test: bool = False, add_accelerometer: bool = True,
+                       use_timestamps: bool = False):
         """
         Primary conversion function for Syntalos recordings.
 
@@ -92,6 +93,6 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
         add_accelerometer: bool, optional
             If true, adds the separate recording channels for accelerometer information. The default is True.
         """
-        super().run_conversion(nwbfile=nwbfile, metadata=metadata, stub_test=stub_test)
+        super().run_conversion(nwbfile=nwbfile, metadata=metadata, stub_test=stub_test, use_timestamps=use_timestamps)
         if add_accelerometer:
             write_accelerometer_data(nwbfile=nwbfile, recording=self.recording_extractor, stub_test=stub_test)
