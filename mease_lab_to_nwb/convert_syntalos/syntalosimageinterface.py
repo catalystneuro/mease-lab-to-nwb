@@ -50,14 +50,12 @@ class SyntalosImageInterface(BaseDataInterface):
             )
 
         if use_timestamps:
-            print(timestamps[0:20])
-            print(video_timestamps[0:20])
-            max_frame = len(timestamps)
-            print(max_frame)
-            print(len(video_timestamps >= max_frame))
-            nearest_frames = np.searchsorted(timestamps, video_timestamps).astype('int64')
-            synched_timestamps = [timestamps[x] for x in nearest_frames if x < max_frame]
-            synched_timestamps.extend(list(video_timestamps[video_timestamps >= max_frame]))
+            nearest_frames = np.searchsorted(
+                timestamps,
+                video_timestamps[video_timestamps < timestamps[-1]]
+            ).astype('int64')
+            synched_timestamps = [timestamps[x] for x in nearest_frames]
+            synched_timestamps.extend(list(video_timestamps[video_timestamps >= timestamps[-1]]))
             video_timestamps = synched_timestamps
 
         # Custom labeled events
