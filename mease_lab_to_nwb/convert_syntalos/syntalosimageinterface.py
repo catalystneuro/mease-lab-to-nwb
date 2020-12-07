@@ -35,7 +35,7 @@ class SyntalosImageInterface(BaseDataInterface):
         stub_test : bool, optional
             If true, truncates all data to a small size for fast testing. The default is False.
         use_timestamps : bool, optional
-            If true, synchronizes the reported video timestamps with the tsync file from the recording
+            If true, synchronizes the reported video timestamps with the tsync file from the recording.
         timestamps : list, optional
             Only used (and required) if use_timestamps is true. Contains the tsync timestamps from the recording.
         """
