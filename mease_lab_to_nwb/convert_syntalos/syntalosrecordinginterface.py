@@ -1,9 +1,11 @@
 """Authors: Cody Baker and Ben Dichter."""
 import numpy as np
 from tempfile import TemporaryFile
+from pathlib import Path
 
 from pynwb import NWBFile, TimeSeries
 from nwb_conversion_tools.baserecordingextractorinterface import BaseRecordingExtractorInterface
+from nwb_conversion_tools import IntanRecordingInterface
 from hdmf.data_utils import DataChunkIterator
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
@@ -91,6 +93,11 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
     """Conversion class for Syntalos Recording + Accelerometer."""
 
     RX = SyntalosRecordingExtractor
+
+    def get_metadata(self):
+        intan_filepath = [x for x in Path(self.source_data['folder_path']).iterdir() if x.suffix == ".rhd"][0]
+        temp_intan_interface = IntanRecordingInterface(**dict(file_path=intan_filepath))
+        return temp_intan_interface.get_metadata()
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict, stub_test: bool = False, add_accelerometer: bool = True,
                        use_timestamps: bool = False):

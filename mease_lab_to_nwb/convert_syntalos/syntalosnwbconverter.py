@@ -42,13 +42,14 @@ class SyntalosNWBConverter(NWBConverter):
 
     def run_conversion(self, metadata: dict, nwbfile_path: str = None, save_to_file: bool = True,
                        conversion_options: dict = None):
-        if 'SyntalosImage' in self.data_interface_objects \
-                and conversion_options['SyntalosImage'].get('use_timestamps', False):
-            assert 'SyntalosRecording' in self.data_interface_objects, \
-                "Requesting to use tsync timestamps in SyntalosImageInterface, but no recording is present!"
-            conversion_options['SyntalosImage'].update(
-                timestamps=list(self.data_interface_objects['SyntalosRecording'].recording_extractor.get_timestamps())
-            )
+        for interface_name in ['SyntalosImage', 'SyntalosEvent']:
+            if interface_name in self.data_interface_objects \
+                    and conversion_options[interface_name].get('use_timestamps', False):
+                assert 'SyntalosRecording' in self.data_interface_objects, \
+                    f"Requesting to use tsync timestamps in {interface_name}Interface, but no recording is present!"
+                conversion_options[interface_name].update(
+                    timestamps=list(self.data_interface_objects['SyntalosRecording'].recording_extractor.get_timestamps())
+                )
         super().run_conversion(
             metadata=metadata,
             nwbfile_path=nwbfile_path,

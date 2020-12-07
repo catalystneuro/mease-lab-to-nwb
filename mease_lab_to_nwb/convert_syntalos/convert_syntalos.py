@@ -1,5 +1,7 @@
 """Authors: Alessio Buccino, Cody Baker, Szonja Weigl, and Ben Dichter."""
 from pathlib import Path
+from isodate import duration_isoformat
+from datetime import timedelta
 
 from .syntalosnwbconverter import SyntalosNWBConverter
 
@@ -9,6 +11,20 @@ event_file_path = base_path / "events" / "table.csv"
 video_folder_path = base_path / "videos" / "TIS Camera"
 nwbfile_path = base_path / "Syntalos_stub.nwb"
 
+# Enter Session and Subject information here
+# Comment out or remove any fields you do not want to include
+session_description = "Enter session description here."
+
+subject_info = dict(
+    description="Enter optional subject description here",
+    weight="Enter subject weight here",
+    age=duration_isoformat(timedelta(days=0)),  # Enter the age of the subject in days
+    species="Mus musculus",
+    genotype="Enter subject genotype here",
+    sex="Enter subject sex here"
+)
+
+# Set some global conversion options here
 stub_test = True
 use_tsync_timestamps = True
 
@@ -26,6 +42,8 @@ conversion_options = dict(
 )
 converter = SyntalosNWBConverter(source_data)
 metadata = converter.get_metadata()
+metadata['NWBFile'].update(session_description=session_description)
+metadata['Subject'].update(subject_info)
 converter.run_conversion(
     nwbfile_path=str(nwbfile_path.absolute()),
     metadata=metadata,
