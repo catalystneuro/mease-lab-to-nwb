@@ -7,7 +7,12 @@ from cednwbconverter import CEDNWBConverter
 
 base_path = Path("D:/CED_example_data/Short example")
 ced_file_path = base_path / "M113_C4.smrx"
+# base_path = Path("D:/CED_example_data/Other example")
+# ced_file_path = base_path / "m365_pt1_590-1190secs-001.smrx"
 nwbfile_path = base_path / "CED_stub.nwb"
+
+from datetime import datetime
+session_start_time = datetime(2000,1,1)
 
 channel_info = CEDRecordingExtractor.get_all_channels_info(ced_file_path)
 
@@ -28,6 +33,7 @@ conversion_options = dict(
 
 converter = CEDNWBConverter(source_data)
 metadata = converter.get_metadata()
+metadata['NWBFile'].update(session_start_time=session_start_time)
 converter.run_conversion(
     nwbfile_path=str(nwbfile_path.absolute()),
     metadata=metadata,
