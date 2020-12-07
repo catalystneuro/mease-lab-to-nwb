@@ -1,6 +1,8 @@
 """Authors: Cody Baker and Ben Dichter."""
 import numpy as np
 import pandas as pd
+from typing import Optional
+
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from ndx_events import LabeledEvents
 from nwb_conversion_tools.basedatainterface import BaseDataInterface
@@ -20,7 +22,8 @@ class SyntalosEventInterface(BaseDataInterface):
             )
         )
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict):
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict, use_timestamps: bool = False,
+                       timestamps: Optional[list] = None):
         """
         Primary conversion function for the custom Syntalos event interface.
 
@@ -30,15 +33,27 @@ class SyntalosEventInterface(BaseDataInterface):
         metadata_dict : dict
         stub_test : bool, optional
             If true, truncates all data to a small size for fast testing. The default is False.
+        use_timestamps : bool, optional
+            If true, synchronizes the reported video timestamps with the tsync file from the recording.
+        timestamps : list, optional
+            Only used (and required) if use_timestamps is true. Contains the tsync timestamps from the recording.
         """
         event_file = self.source_data['file_path']
         events_data = pd.read_csv(event_file, header=0)
         split_first_col = [x.split(";") for x in events_data['Time;Tag;Description']]
-        event_timestamps = [int(x[0]) for x in split_first_col]
+        event_timestamps = [int(x[0]) / 1E3 for x in split_first_col]
         event_labels = [x[1] for x in split_first_col]
         unique_events = set(event_labels)
         events_map = {event: n for n, event in enumerate(unique_events)}
         event_data = [events_map[event] for event in event_labels]
+
+        if use_timestamps:
+            nearest_frames = np.searchsorted(
+                timestamps,
+                event_timestamps
+            ).astype('int64')
+            synched_timestamps = [timestamps[x] for x in nearest_frames]
+            event_timestamps = synched_timestamps
 
         # Custom labeled events
         events = LabeledEvents(
