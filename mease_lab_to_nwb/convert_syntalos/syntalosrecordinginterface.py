@@ -96,7 +96,7 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
 
     def get_metadata(self):
         intan_filepath = [x for x in Path(self.source_data['folder_path']).iterdir() if x.suffix == ".rhd"][0]
-        temp_intan_interface = IntanRecordingInterface(**dict(file_path=intan_filepath))
+        temp_intan_interface = IntanRecordingInterface(file_path=intan_filepath)
         return temp_intan_interface.get_metadata()
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict, stub_test: bool = False, add_accelerometer: bool = True,
