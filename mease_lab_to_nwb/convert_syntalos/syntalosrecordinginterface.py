@@ -41,7 +41,7 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
 
     all_accel_data = np.concatenate(np.moveaxis(np.array(all_memmaps), 2, 1))
     if stub_test:
-        all_accel_data = all_accel_data[1:100, :]
+        all_accel_data = all_accel_data[:100, :]
 
     nwbfile.add_acquisition(
         TimeSeries(
