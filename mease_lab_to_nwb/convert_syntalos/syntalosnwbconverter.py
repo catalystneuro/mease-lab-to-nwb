@@ -1,6 +1,5 @@
 """Authors: Cody Baker and Ben Dichter."""
 from pathlib import Path
-
 import toml
 from dateparser import parse as dateparse
 
@@ -42,12 +41,3 @@ class SyntalosNWBConverter(NWBConverter):
             )
 
         return metadata
-
-    def run_conversion(self, metadata: dict, nwbfile_path: str = None, save_to_file: bool = True,
-                       conversion_options: dict = None):
-        super().run_conversion(
-            metadata=metadata,
-            nwbfile_path=nwbfile_path,
-            save_to_file=save_to_file,
-            conversion_options=conversion_options
-        )
