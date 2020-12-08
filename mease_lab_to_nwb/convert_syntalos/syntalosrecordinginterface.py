@@ -2,7 +2,7 @@
 import numpy as np
 from pathlib import Path
 
-from spikeextractors import NwbRecordingExtractor
+from spikeextractors import NwbRecordingExtractor, SubRecordingExtractor
 from pynwb import NWBFile, TimeSeries
 from nwb_conversion_tools.baserecordingextractorinterface import BaseRecordingExtractorInterface
 from nwb_conversion_tools import IntanRecordingInterface
@@ -22,7 +22,11 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
 
     Expects full timestamps from the higher-frequency recording extractor.
     """
-    accel_channels = np.array([ch for ch in recording._recordings[0]._recording._anas_chan if 'AUX' in ch['name']])
+    if isinstance(recording, SubRecordingExtractor):
+        this_recording = recording._parent_recording
+    else:
+        this_recording = recording
+    accel_channels = np.array([ch for ch in this_recording._recordings[0]._recording._anas_chan if 'AUX' in ch['name']])
     channel_conversion = [x['gain'] for x in accel_channels]
     accel_channel_units = [x['units'] for x in accel_channels]
     accel_channel_sampling_rate = [x['sampling_rate'] for x in accel_channels]
@@ -35,14 +39,12 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
         raise NotImplementedError("Unequal auxiliary channel unit types are not yet supported.")
     if not all_equal(accel_channel_sampling_rate):
         raise NotImplementedError("Unequal auxiliary channel sampling rates are not yet supported.")
-    if not isinstance(recording._recordings[0]._recording._raw_data[accel_channels[0]['name']], np.memmap):
-        raise NotImplementedError("Writing accelerometer data for non-memory maps is not supported!")
 
     conversion = channel_conversion[0]
     accel_sampling_rate = accel_channel_sampling_rate[0]
     all_memmaps = [
         [x._recording._raw_data[accel_channels[j]['name']].flatten() for j in range(accel_channels.size)]
-        for x in recording._recordings
+        for x in this_recording._recordings
     ]
 
     all_accel_data = np.concatenate(np.moveaxis(np.array(all_memmaps), 2, 1))
@@ -60,8 +62,13 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
     if not use_timestamps:
         tseries_kwargs.update(rate=accel_sampling_rate)
     else:
+        print(this_recording._timestamps[:50])
         accel_timestamps = recording.frame_to_time(
-            recording.time_to_frame(np.arange(0, all_accel_data.shape[0]) / accel_sampling_rate)
+            np.arange(
+                0,
+                this_recording.get_num_frames(),
+                this_recording.get_sampling_frequency() / accel_sampling_rate
+            ).astype(int)
         )
         tseries_kwargs.update(timestamps=H5DataIO(accel_timestamps, compression="gzip"))
 
@@ -94,7 +101,7 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
         """
         recording_extractor = self.subset_recording(stub_test=stub_test)
         NwbRecordingExtractor.write_recording(
-            recording_extractor,
+            recording=recording_extractor,
             nwbfile=nwbfile,
             metadata=metadata,
             use_timestamps=use_timestamps
@@ -102,7 +109,7 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
         if add_accelerometer:
             write_accelerometer_data(
                 nwbfile=nwbfile,
-                recording=self.recording_extractor,
+                recording=recording_extractor,
                 stub_test=stub_test,
                 use_timestamps=use_timestamps
             )
