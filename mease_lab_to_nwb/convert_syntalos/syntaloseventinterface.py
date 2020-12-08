@@ -21,7 +21,7 @@ class SyntalosEventInterface(BaseDataInterface):
             )
         )
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict, use_timestamps: bool = False):
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict):
         """
         Primary conversion function for the custom Syntalos event interface.
 
@@ -31,10 +31,6 @@ class SyntalosEventInterface(BaseDataInterface):
         metadata_dict : dict
         stub_test : bool, optional
             If true, truncates all data to a small size for fast testing. The default is False.
-        use_timestamps : bool, optional
-            If true, synchronizes the reported video timestamps with the tsync file from the recording.
-        timestamps : list, optional
-            Only used (and required) if use_timestamps is true. Contains the tsync timestamps from the recording.
         """
         event_file = self.source_data['file_path']
         events_data = pd.read_csv(event_file, header=0)
