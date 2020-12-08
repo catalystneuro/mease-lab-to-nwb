@@ -16,6 +16,7 @@ nwbfile_path = base_path / "Syntalos_stub.nwb"
 session_description = "Enter session description here."
 
 subject_info = dict(
+    subject_id="Enter optional subject id here",
     description="Enter optional subject description here",
     weight="Enter subject weight here",
     age=duration_isoformat(timedelta(days=0)),  # Enter the age of the subject in days
