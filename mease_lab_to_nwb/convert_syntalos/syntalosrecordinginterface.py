@@ -1,12 +1,11 @@
 """Authors: Cody Baker and Ben Dichter."""
 import numpy as np
-from tempfile import TemporaryFile
 from pathlib import Path
 
+from spikeextractors import NwbRecordingExtractor
 from pynwb import NWBFile, TimeSeries
 from nwb_conversion_tools.baserecordingextractorinterface import BaseRecordingExtractorInterface
 from nwb_conversion_tools import IntanRecordingInterface
-from hdmf.data_utils import DataChunkIterator
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 from .syntalosrecordingextractor import SyntalosRecordingExtractor
@@ -17,9 +16,7 @@ def all_equal(lst: list):
     return len(set(lst)) == 1
 
 
-# TODO: allow buffer_mb to be specified top-down (currently defaulting)
-def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = False, buffer_mb: int = 500,
-                             use_timestamps: bool = False):
+def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = False, use_timestamps: bool = False):
     """
     Add accelerometer data from a single rhd file to the NWBFile.
 
@@ -47,37 +44,19 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
         [x._recording._raw_data[accel_channels[j]['name']].flatten() for j in range(accel_channels.size)]
         for x in recording._recordings
     ]
-    lens = [x[0].size for x in all_memmaps]
-    total_length = sum(lens)
-    all_accel_data = np.memmap(
-        filename=TemporaryFile(),
-        dtype=recording.get_dtype(),
-        mode="w+",
-        shape=(total_length, accel_channels.size)
-    )
-    cumlens = np.insert(np.cumsum(lens), 0, 0)
-    for j, x in enumerate(all_memmaps):
-        for n, y in enumerate(x):
-            all_accel_data[cumlens[j]:cumlens[j+1], n] = y
-    n_bytes = np.dtype(recording.get_dtype()).itemsize
-    buffer_size = int(buffer_mb * 1e6) // (accel_channels.size * n_bytes)
 
+    all_accel_data = np.concatenate(np.moveaxis(np.array(all_memmaps), 2, 1))
     if stub_test:
-        all_accel_data = all_accel_data[0:100, :]
+        all_accel_data = all_accel_data[:100, :]
 
-    accel_data = DataChunkIterator(
-        data=all_accel_data,
-        buffer_size=buffer_size
-    )
     tseries_kwargs = dict(
         name="Accelerometer",
         description="Data recorded from auxiliary channels from an intan device, tracking acceleration.",
-        data=H5DataIO(accel_data, compression="gzip"),
+        data=H5DataIO(all_accel_data, compression="gzip"),
         unit=accel_channel_units[0],
         resolution=np.nan,
         conversion=conversion
     )
-
     if not use_timestamps:
         tseries_kwargs.update(rate=accel_sampling_rate)
     else:
@@ -113,7 +92,13 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
         add_accelerometer: bool, optional
             If true, adds the separate recording channels for accelerometer information. The default is True.
         """
-        super().run_conversion(nwbfile=nwbfile, metadata=metadata, stub_test=stub_test, use_timestamps=use_timestamps)
+        recording_extractor = self.subset_recording(stub_test=stub_test)
+        NwbRecordingExtractor.write_recording(
+            recording_extractor,
+            nwbfile=nwbfile,
+            metadata=metadata,
+            use_timestamps=use_timestamps
+        )
         if add_accelerometer:
             write_accelerometer_data(
                 nwbfile=nwbfile,

@@ -1,7 +1,6 @@
 """Authors: Cody Baker and Ben Dichter."""
 import numpy as np
 import pandas as pd
-from typing import Optional
 
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from ndx_events import LabeledEvents
@@ -22,8 +21,7 @@ class SyntalosEventInterface(BaseDataInterface):
             )
         )
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict, use_timestamps: bool = False,
-                       timestamps: Optional[list] = None):
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict, use_timestamps: bool = False):
         """
         Primary conversion function for the custom Syntalos event interface.
 
@@ -46,14 +44,6 @@ class SyntalosEventInterface(BaseDataInterface):
         unique_events = set(event_labels)
         events_map = {event: n for n, event in enumerate(unique_events)}
         event_data = [events_map[event] for event in event_labels]
-
-        if use_timestamps:
-            nearest_frames = np.searchsorted(
-                timestamps,
-                event_timestamps
-            ).astype('int64')
-            synched_timestamps = [timestamps[x] for x in nearest_frames]
-            event_timestamps = synched_timestamps
 
         # Custom labeled events
         events = LabeledEvents(

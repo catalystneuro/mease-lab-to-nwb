@@ -2,7 +2,6 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from typing import Optional
 
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from nwb_conversion_tools.basedatainterface import BaseDataInterface
@@ -23,8 +22,7 @@ class SyntalosImageInterface(BaseDataInterface):
             )
         )
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict, use_timestamps: bool = False,
-                       timestamps: Optional[list] = None):
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict, use_timestamps: bool = False):
         """
         Primary conversion function for the custom Syntalos image interface.
 
@@ -49,15 +47,6 @@ class SyntalosImageInterface(BaseDataInterface):
                 video_timestamps,
                 [int(x.split(";")[1]) / 1E3 for x in video_time_file['frame; timestamp']]
             )
-
-        if use_timestamps:
-            nearest_frames = np.searchsorted(
-                timestamps,
-                video_timestamps[video_timestamps < timestamps[-1]]
-            ).astype('int64')
-            synched_timestamps = [timestamps[x] for x in nearest_frames]
-            synched_timestamps.extend(list(video_timestamps[video_timestamps >= timestamps[-1]]))
-            video_timestamps = synched_timestamps
 
         # Custom labeled events
         videos = ImageSeries(

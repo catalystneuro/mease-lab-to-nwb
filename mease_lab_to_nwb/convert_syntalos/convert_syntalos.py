@@ -36,8 +36,6 @@ source_data = dict(
     SyntalosRecording=dict(folder_path=str(intan_folder_path.absolute()))
 )
 conversion_options = dict(
-    SyntalosEvent=dict(use_timestamps=use_tsync_timestamps),
-    SyntalosImage=dict(use_timestamps=use_tsync_timestamps),
     SyntalosRecording=dict(stub_test=stub_test, use_timestamps=use_tsync_timestamps)
 )
 converter = SyntalosNWBConverter(source_data)
