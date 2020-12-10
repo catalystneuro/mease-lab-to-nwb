@@ -62,7 +62,6 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
     if not use_timestamps:
         tseries_kwargs.update(rate=accel_sampling_rate)
     else:
-        print(this_recording._timestamps[:50])
         accel_timestamps = recording.frame_to_time(
             np.arange(
                 0,
@@ -99,9 +98,12 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
         add_accelerometer: bool, optional
             If true, adds the separate recording channels for accelerometer information. The default is True.
         """
-        recording_extractor = self.subset_recording(stub_test=stub_test)
+        if stub_test or self.subset_channels is not None:
+            recording = self.subset_recording(stub_test=stub_test)
+        else:
+            recording = self.recording_extractor
         NwbRecordingExtractor.write_recording(
-            recording=recording_extractor,
+            recording=recording,
             nwbfile=nwbfile,
             metadata=metadata,
             use_timestamps=use_timestamps
@@ -109,7 +111,7 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
         if add_accelerometer:
             write_accelerometer_data(
                 nwbfile=nwbfile,
-                recording=recording_extractor,
+                recording=recording,
                 stub_test=stub_test,
                 use_timestamps=use_timestamps
             )

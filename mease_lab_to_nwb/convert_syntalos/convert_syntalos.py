@@ -3,7 +3,7 @@ from pathlib import Path
 from isodate import duration_isoformat
 from datetime import timedelta
 
-from .syntalosnwbconverter import SyntalosNWBConverter
+from mease_lab_to_nwb import SyntalosNWBConverter
 
 base_path = Path("D:/Syntalos/Latest Syntalos Recording _20200730")
 intan_folder_path = base_path / "intan-signals"

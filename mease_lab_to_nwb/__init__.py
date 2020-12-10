@@ -1,3 +1,4 @@
 from .convert_ced.cednwbconverter import CEDNWBConverter
 from .convert_syntalos.syntalosnwbconverter import SyntalosNWBConverter
 from .convert_syntalos.syntalosrecordingextractor import SyntalosRecordingExtractor
+from .convert_syntalos.syntalosrecordinginterface import SyntalosRecordingInterface
