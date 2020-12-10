@@ -19,7 +19,7 @@ for ch, info in channel_info.items():
 source_data = dict(
     CEDRecording=dict(
         file_path=str(ced_file_path.absolute()),
-        smrx_ch_inds=rhd_channels
+        smrx_channel_ids=rhd_channels
     )
 )
 conversion_options = dict(
