@@ -9,7 +9,7 @@ base_path = Path("D:/Syntalos/Latest Syntalos Recording _20200730")
 intan_folder_path = base_path / "intan-signals"
 event_file_path = base_path / "events" / "table.csv"
 video_folder_path = base_path / "videos" / "TIS Camera"
-nwbfile_path = base_path / "Syntalos_stub.nwb"
+nwbfile_path = base_path / "Syntalos.nwb"
 
 # Enter Session and Subject information here
 # Comment out or remove any fields you do not want to include
@@ -28,6 +28,7 @@ subject_info = dict(
 # Set some global conversion options here
 stub_test = True
 use_tsync_timestamps = True
+overwrite = True  # If the NWBFile exists at the path, replace it
 
 
 # Automatically performs conversion based on above filepaths and options
@@ -46,5 +47,6 @@ metadata['Subject'].update(subject_info)
 converter.run_conversion(
     nwbfile_path=str(nwbfile_path.absolute()),
     metadata=metadata,
-    conversion_options=conversion_options
+    conversion_options=conversion_options,
+    overwrite=overwrite
 )

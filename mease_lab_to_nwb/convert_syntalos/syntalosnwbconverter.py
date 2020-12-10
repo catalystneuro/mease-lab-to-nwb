@@ -51,20 +51,6 @@ class SyntalosNWBConverter(NWBConverter):
                        sorting: Optional[se.SortingExtractor] = None,
                        timestamps: Optional[Union[list, np.ndarray]] = None,
                        recording_lfp: Optional[se.RecordingExtractor] = None):
-        if sorting is not None:
-            nwbfile_kwargs = dict(
-                session_description=metadata['NWBFile']['session_description'],
-                session_id=metadata['NWBFile']['session_id'],
-                session_start_time=metadata['NWBFile']['session_start_time']
-            )
-            se.NwbSortingExtractor.write_sorting(
-                sorting=sorting,
-                save_path=nwbfile_path,
-                timestamps=timestamps,
-                overwrite=overwrite,
-                **nwbfile_kwargs
-            )
-        overwrite = False
         super().run_conversion(
             nwbfile_path=nwbfile_path,
             metadata=metadata,
@@ -72,6 +58,12 @@ class SyntalosNWBConverter(NWBConverter):
             overwrite=overwrite,
             conversion_options=conversion_options
         )
+        if sorting is not None:
+            se.NwbSortingExtractor.write_sorting(
+                sorting=sorting,
+                save_path=nwbfile_path,
+                timestamps=timestamps
+            )
         if recording_lfp is not None:
             se.NwbRecordingExtractor.write_recording(
                 recording=recording_lfp,
