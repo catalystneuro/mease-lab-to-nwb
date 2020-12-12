@@ -44,6 +44,7 @@ class SyntalosRecordingExtractor(MultiRecordingTimeExtractor):
 
         super().__init__(recordings)
         self._timestamps = _get_timestamps_with_tsync(self, tsync_files[0])
+        self._timestamps = self._timestamps - self._timestamps[0]
 
         self._kwargs = dict(file_paths=[str(file_path.absolute()) for file_path in file_paths])
 
