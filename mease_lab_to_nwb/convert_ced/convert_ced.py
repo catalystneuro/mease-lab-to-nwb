@@ -1,28 +1,35 @@
 """Authors: Cody Baker and Ben Dichter."""
-# TODO: add pathlib
-import os
+from pathlib import Path
+from spikeextractors import CEDRecordingExtractor
 
-from joblib import Parallel, delayed
-
-from .cednwbconverter import CEDNWBConverter
-
-n_jobs = 1  # number of parallel streams to run
-
-base_path = "D:/Heidelberg_data/CED_example_data"
-
-# Manual list of selected sessions that cause problems with the general functionality
-exlude_sessions = []
-nwbfile_paths = []
+from cednwbconverter import CEDNWBConverter
 
 
-def run_ced_conv(virmen_session, spikeglx_session, nwbfile_path):
-    """Conversion function to be run in parallel."""
-    if os.path.exists(base_path):
-        print(f"Processsing {virmen_session}...")
-        if not os.path.isfile(nwbfile_path):
-            converter = CEDNWBConverter(**input_args)
-            metadata = converter.get_metadata()
+base_path = Path("D:/CED_example_data/Other example")
+ced_file_path = base_path / "m365_pt1_590-1190secs-001.smrx"
+nwbfile_path = base_path / "CED_stub.nwb"
 
-            converter.run_conversion(nwbfile_path=nwbfile_path, metadata_dict=metadata, stub_test=True)
-    else:
-        print(f"The folder ({base_path}) does not exist!")
+channel_info = CEDRecordingExtractor.get_all_channels_info(ced_file_path)
+
+rhd_channels = []
+for ch, info in channel_info.items():
+    if "Rhd" in info["title"]:
+        rhd_channels.append(ch)
+
+source_data = dict(
+    CEDRecording=dict(
+        file_path=str(ced_file_path.absolute()),
+        smrx_ch_inds=rhd_channels
+    )
+)
+conversion_options = dict(
+    CEDRecording=dict(stub_test=True)
+)
+
+converter = CEDNWBConverter(source_data)
+metadata = converter.get_metadata()
+converter.run_conversion(
+    nwbfile_path=str(nwbfile_path.absolute()),
+    metadata=metadata,
+    conversion_options=conversion_options
+)
