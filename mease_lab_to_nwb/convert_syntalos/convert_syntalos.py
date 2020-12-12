@@ -9,26 +9,26 @@ base_path = Path("D:/Syntalos/Latest Syntalos Recording _20200730")
 intan_folder_path = base_path / "intan-signals"
 event_file_path = base_path / "events" / "table.csv"
 video_folder_path = base_path / "videos" / "TIS Camera"
-nwbfile_path = base_path / "Syntalos.nwb"
+nwbfile_path = base_path / "Syntalos_test.nwb"
 
 # Enter Session and Subject information here
-# Comment out or remove any fields you do not want to include
+# Uncomment any fields you want to include
 session_description = "Enter session description here."
 
 subject_info = dict(
     subject_id="Enter optional subject id here",
-    description="Enter optional subject description here",
-    weight="Enter subject weight here",
-    age=duration_isoformat(timedelta(days=0)),  # Enter the age of the subject in days
-    species="Mus musculus",
-    genotype="Enter subject genotype here",
-    sex="Enter subject sex here"
+    # description="Enter optional subject description here",
+    # weight="Enter subject weight here",
+    # age=duration_isoformat(timedelta(days=0)),  # Enter the age of the subject in days
+    # species="Mus musculus",
+    # genotype="Enter subject genotype here",
+    # sex="Enter subject sex here"
 )
 
 # Set some global conversion options here
 stub_test = True
 use_tsync_timestamps = True
-overwrite = True  # If the NWBFile exists at the path, replace it
+overwrite = False  # If the NWBFile exists at the path, replace it
 
 
 # Automatically performs conversion based on above filepaths and options
