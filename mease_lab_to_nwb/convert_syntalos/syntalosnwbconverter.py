@@ -16,6 +16,35 @@ from .syntalosrecordinginterface import SyntalosRecordingInterface
 OptionalArrayType = Optional[Union[list, np.ndarray]]
 
 
+def quick_write(intan_folder_path: str, session_description: str, save_path: str,
+                sorting: Optional[se.SortingExtractor] = None,
+                recording_lfp: Optional[se.RecordingExtractor] = None,
+                timestamps: OptionalArrayType = None, overwrite: bool = False):
+    """Automatically extracts required session info from intan_folder_path and writes NWBFile in spikeextractors."""
+    intan_folder_path = Path(intan_folder_path)
+    session_id = [x for x in intan_folder_path.iterdir() if x.suffix == ".rhd"][0].stem
+    session_start = datetime.strptime(session_id[-13:], "%y%m%d_%H%M%S")
+    nwbfile_kwargs = dict(
+        session_description=session_description,
+        session_start_time=session_start.astimezone(),
+        session_id=session_id,
+    )
+    if sorting is not None:
+        se.NwbSortingExtractor.write_sorting(
+            sorting=sorting,
+            save_path=save_path,
+            timestamps=timestamps,
+            overwrite=overwrite,
+            **nwbfile_kwargs
+        )
+    if recording_lfp is not None:
+        se.NwbRecordingExtractor.write_recording(
+            recording=recording_lfp,
+            save_path=save_path,
+            write_as_lfp=True
+        )
+
+
 class SyntalosNWBConverter(NWBConverter):
     """Primary conversion class for Syntalos."""
 
@@ -89,32 +118,3 @@ class SyntalosNWBConverter(NWBConverter):
             print(f"NWB file saved at {nwbfile_path}!")
         else:
             return nwbfile
-
-    @staticmethod
-    def quick_write(intan_folder_path: str, session_description: str, save_path: str,
-                    sorting: Optional[se.SortingExtractor] = None,
-                    recording_lfp: Optional[se.RecordingExtractor] = None,
-                    timestamps: OptionalArrayType = None, overwrite: bool = False):
-        """Automatically extracts required session info from intan_folder_path and writes NWBFile in spikeextractors."""
-        intan_folder_path = Path(intan_folder_path)
-        session_id = [x for x in intan_folder_path.iterdir() if x.suffix == ".rhd"][0].stem
-        session_start = datetime.strptime(session_id[-13:], "%y%m%d_%H%M%S")
-        nwbfile_kwargs = dict(
-            session_description=session_description,
-            session_start_time=session_start.astimezone(),
-            session_id=session_id,
-        )
-        if sorting is not None:
-            se.NwbSortingExtractor.write_sorting(
-                sorting=sorting,
-                save_path=save_path,
-                timestamps=timestamps,
-                overwrite=overwrite,
-                **nwbfile_kwargs
-            )
-        if recording_lfp is not None:
-            se.NwbRecordingExtractor.write_recording(
-                recording=recording_lfp,
-                save_path=save_path,
-                write_as_lfp=True
-            )
