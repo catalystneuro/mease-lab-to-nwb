@@ -85,18 +85,20 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
         return temp_intan_interface.get_metadata()
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict, stub_test: bool = False, add_accelerometer: bool = True,
-                       use_timestamps: bool = False):
+                       use_timestamps: bool = True):
         """
         Primary conversion function for Syntalos recordings.
 
         Parameters
         ----------
         nwbfile : NWBFile
-        metadata_dict : dict
+        metadata : dict
         stub_test : bool, optional
             If true, truncates all data to a small size for fast testing. The default is False.
         add_accelerometer: bool, optional
             If true, adds the separate recording channels for accelerometer information. The default is True.
+        use_timestamps: bool, optional
+            If true, uses the timestamps obtained from the tsync file. The default is True.
         """
         if stub_test or self.subset_channels is not None:
             recording = self.subset_recording(stub_test=stub_test)

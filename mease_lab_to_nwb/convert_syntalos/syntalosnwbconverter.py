@@ -56,15 +56,12 @@ class SyntalosNWBConverter(NWBConverter):
 
     def get_metadata(self):
         metadata = super().get_metadata()
-        metadata['NWBFile'].update(
-            institution="EMBL - Heidelberg",
-            lab="Mease"
-        )
-
         intan_folder_path = Path(self.data_interface_objects['SyntalosRecording'].source_data['folder_path'])
         session_id = [x for x in intan_folder_path.iterdir() if x.suffix == ".rhd"][0].stem
         session_start = datetime.strptime(session_id[-13:], "%y%m%d_%H%M%S")
         metadata['NWBFile'].update(
+            institution="EMBL - Heidelberg",
+            lab="Mease",
             session_start_time=session_start.astimezone(),
             session_id=session_id,
         )
@@ -83,6 +80,23 @@ class SyntalosNWBConverter(NWBConverter):
                        sorting: Optional[se.SortingExtractor] = None,
                        recording_lfp: Optional[se.RecordingExtractor] = None,
                        timestamps: OptionalArrayType = None):
+        """
+        Build nwbfile object, auto-populate with minimal values if missing.
+
+        Parameters
+        ----------
+        metadata : dict
+        nwbfile_path : Optional[str], optional
+        save_to_file : bool, optional
+        conversion_options : Optional[dict], optional
+        overwrite : bool, optional
+        sorting : SortingExtractor, optional
+            A SortingExtractor object to write to the NWBFile.
+        recording_lfp : RecordingExtractor, optional
+            A RecordingExtractor object to write to the NWBFile.
+        timestamps : ArrayType, optional
+            Array of timestamps obtained from tsync file.
+        """
         nwbfile = super().run_conversion(
             metadata=metadata,
             save_to_file=False,
