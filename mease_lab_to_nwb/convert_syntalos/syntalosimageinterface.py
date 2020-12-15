@@ -1,8 +1,8 @@
 """Authors: Cody Baker and Ben Dichter."""
 from pathlib import Path
-
 import numpy as np
 import pandas as pd
+
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from nwb_conversion_tools.basedatainterface import BaseDataInterface
 from pynwb import NWBFile
@@ -14,7 +14,6 @@ class SyntalosImageInterface(BaseDataInterface):
 
     @classmethod
     def get_source_schema(cls):
-        """Return a partial JSON schema indicating the input arguments and their types."""
         return dict(
             required=['folder_path'],
             properties=dict(
@@ -23,23 +22,17 @@ class SyntalosImageInterface(BaseDataInterface):
         )
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict):
-        """
-        Primary conversion function for the custom Syntalos image interface.
-
-        Parameters
-        ----------
-        nwbfile : NWBFile
-        metadata_dict : dict
-        stub_test : bool, optional
-            If true, truncates all data to a small size for fast testing. The default is False.
-        """
         video_folder = Path(self.source_data['folder_path'])
-        video_file_path_list = [str(x.absolute()) for x in video_folder.iterdir() if x.suffix == ".mkv"]
+        video_file_path_list = [str(x) for x in video_folder.iterdir() if x.suffix == ".mkv"]
 
-        video_timestamps = list()
+        video_timestamps = np.empty(0)
         for video_file_path in video_file_path_list:
-            video_time_file = pd.read_csv(video_file_path.replace(".mkv", "_timestamps.csv"), header=0)
-            video_timestamps.append(np.array([int(x.split(";")[1]) for x in video_time_file['frame; timestamp']]))
+            video_time_df = pd.read_csv(
+                video_file_path.replace(".mkv", "_timestamps.csv"),
+                delimiter=";",
+                skipinitialspace=True
+            )
+            video_timestamps = np.append(video_timestamps, video_time_df['timestamp'].to_numpy() / 1E3)
 
         # Custom labeled events
         videos = ImageSeries(
@@ -47,6 +40,6 @@ class SyntalosImageInterface(BaseDataInterface):
             description="Videos recorded by TIS camera.",
             format="external",
             external_file=video_file_path_list,
-            timestamps=H5DataIO(np.concatenate(video_timestamps), compression="gzip")
+            timestamps=H5DataIO(video_timestamps, compression="gzip")
         )
         nwbfile.add_acquisition(videos)

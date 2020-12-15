@@ -5,7 +5,6 @@ h5py
 isodate
 sonpy
 toml
-dateparser
 ndx-events
 edlio
 crc32c
