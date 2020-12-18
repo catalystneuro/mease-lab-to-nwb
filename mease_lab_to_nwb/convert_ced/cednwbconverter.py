@@ -1,6 +1,5 @@
 """Authors: Cody Baker and Ben Dichter."""
 from nwb_conversion_tools import NWBConverter, CEDRecordingInterface
-from spikeextractors import CEDRecordingExtractor
 
 
 class CEDNWBConverter(NWBConverter):
@@ -9,7 +8,7 @@ class CEDNWBConverter(NWBConverter):
     )
 
     def __init__(self, source_data):
-        channel_info = CEDRecordingExtractor.get_all_channels_info(source_data['CEDRecording']['file_path'])
+        channel_info = CEDRecordingInterface.get_all_channels_info(source_data['CEDRecording']['file_path'])
         rhd_channels = []
         for ch, info in channel_info.items():
             if "Rhd" in info["title"]:
