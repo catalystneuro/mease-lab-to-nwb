@@ -39,7 +39,7 @@ class SyntalosRecordingExtractor(MultiRecordingTimeExtractor):
 
         recordings = []
         for file_path in files_sorted:
-            intan_recording = IntanRecordingExtractor(file_path=file_path, dtype="uint16")
+            intan_recording = IntanRecordingExtractor(file_path=file_path, dtype="int16")
             recordings.append(intan_recording)
 
         super().__init__(recordings)
