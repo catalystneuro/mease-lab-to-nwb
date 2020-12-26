@@ -9,12 +9,14 @@ ced_file_path = base_path / "m365_pt1_590-1190secs-001.smrx"
 nwbfile_path = base_path / "CED_stub.nwb"
 
 source_data = dict(
-    CEDRecording=dict(
-        file_path=str(ced_file_path.absolute())
-    )
+    CEDRecording=dict(file_path=str(ced_file_path)),
+    CEDMechStimulus=dict(file_path=str(ced_file_path)),
+    CEDLaserStimulus=dict(file_path=str(ced_file_path))
 )
 conversion_options = dict(
-    CEDRecording=dict(stub_test=True)
+    CEDRecording=dict(stub_test=True),
+    CEDMechStimulus=dict(stub_test=True),
+    CEDLaserStimulus=dict(stub_test=True)
 )
 
 converter = CEDNWBConverter(source_data)
@@ -22,5 +24,6 @@ metadata = converter.get_metadata()
 converter.run_conversion(
     nwbfile_path=str(nwbfile_path),
     metadata=metadata,
-    conversion_options=conversion_options
+    conversion_options=conversion_options,
+    overwrite=True
 )
