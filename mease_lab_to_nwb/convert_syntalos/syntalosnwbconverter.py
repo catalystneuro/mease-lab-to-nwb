@@ -62,8 +62,8 @@ class SyntalosNWBConverter(NWBConverter):
         metadata['NWBFile'].update(
             institution="EMBL - Heidelberg",
             lab="Mease",
-            session_start_time=session_start.astimezone(),
             session_id=session_id,
+            session_start_time=session_start.astimezone()
         )
         main_attr_file = intan_folder_path.parent / "attributes.toml"
         if main_attr_file.is_file():
