@@ -10,13 +10,10 @@ nwbfile_path = base_path / "CED_stub.nwb"
 
 source_data = dict(
     CEDRecording=dict(file_path=str(ced_file_path)),
-    CEDMechStimulus=dict(file_path=str(ced_file_path)),
-    CEDLaserStimulus=dict(file_path=str(ced_file_path))
+    CEDStimulus=dict(file_path=str(ced_file_path))
 )
 conversion_options = dict(
-    CEDRecording=dict(stub_test=True),
-    CEDMechStimulus=dict(stub_test=True),
-    CEDLaserStimulus=dict(stub_test=True)
+    CEDRecording=dict(stub_test=True)
 )
 
 converter = CEDNWBConverter(source_data)
