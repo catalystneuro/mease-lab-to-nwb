@@ -6,7 +6,7 @@ from pynwb.epoch import TimeIntervals
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from nwb_conversion_tools.baserecordingextractorinterface import BaseRecordingExtractorInterface
 from nwb_conversion_tools.json_schema_utils import get_schema_from_method_signature
-from spikeextractors import CEDRecordingExtractor
+from spikeextractors import RecordingExtractor, CEDRecordingExtractor
 
 
 def check_module(nwbfile, name, description=None):
@@ -21,7 +21,6 @@ def check_module(nwbfile, name, description=None):
     Returns
     -------
     pynwb.module
-
     """
     if name in nwbfile.modules:
         return nwbfile.modules[name]
@@ -31,13 +30,16 @@ def check_module(nwbfile, name, description=None):
         return nwbfile.create_processing_module(name, description)
 
 
-def intervals_from_traces(traces):
+def intervals_from_traces(recording: RecordingExtractor):
     """Extract interval times from TTL pulses."""
+    traces = recording.get_traces(channel_ids=[1, 2])
+    sf = recording.get_sampling_frequency()
+
     ttls = []
     states = []
     for tr in traces:
         threshold = np.ptp(tr) / 2 + np.min(tr)
-        crossings = np.array(tr > threshold).astype('int8')
+        crossings = np.array(tr > threshold).astype("int8")
 
         rising = np.nonzero(np.diff(crossings, 1) > 0)[0]
         falling = np.nonzero(np.diff(crossings, 1) < 0)[0]
@@ -52,13 +54,12 @@ def intervals_from_traces(traces):
         states.append(state)
 
     conditions = []
-
     for ttl, state in zip(ttls, states):
-        assert len(ttl[state == 1]) == len(ttl[state == -1]), "Different number of rising/falling edges"
-        condition = np.zeros((len(ttl[state == 1]), 2), dtype='int')
+        assert len(ttl[state == 1]) == len(ttl[state == -1]), "Different number of rising/falling edges!"
+        condition = np.zeros((len(ttl[state == 1]), 2), dtype="int")
 
-        condition[:, 0] = ttl[state == 1]
-        condition[:, 1] = ttl[state == -1]
+        condition[:, 0] = ttl[state == 1] / sf
+        condition[:, 1] = ttl[state == -1] / sf
 
         conditions.append(condition)
 
@@ -88,7 +89,7 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict = None, stub_test: bool = False):        
         # Under 'processed - behavior' module add extracted on/off intervals
-        conditions = intervals_from_traces(self.recording_extractor.get_traces(channel_ids=[1, 2]))
+        conditions = intervals_from_traces(self.recording_extractor)
         mech_stim = TimeIntervals(
             name='MechanicalStimulus',
             description="Activation times inferred from TTL commands for mechanical stimulus."
@@ -97,8 +98,9 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
             name='LaserStimulus',
             description="Activation times inferred from TTL commands for cortical laser stimulus."
         )
-        for table, row in zip([mech_stim, laser_stim], conditions):
-            table.add_row(dict(start_time=row[0], stop_time=row[1]))
+        for j, table in enumerate([mech_stim, laser_stim]):
+            for row in conditions[j]:
+                table.add_row(dict(start_time=row[0], stop_time=row[1]))
         check_module(nwbfile, 'behavior', "Contains behavioral data.").add_data_interface(mech_stim)
         check_module(nwbfile, 'behavior', "Contains behavioral data.").add_data_interface(laser_stim)
 
