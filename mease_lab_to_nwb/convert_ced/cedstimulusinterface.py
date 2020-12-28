@@ -86,7 +86,7 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
         )
         return source_schema
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict = None, stub_test: bool = True):        
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict = None, stub_test: bool = False):        
         # Under 'processed - behavior' module add extracted on/off intervals
         conditions = intervals_from_traces(self.recording_extractor.get_traces(channel_ids=[1, 2]))
         mech_stim = TimeIntervals(

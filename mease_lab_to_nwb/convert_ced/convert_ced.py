@@ -15,7 +15,7 @@ nwbfile_path = base_path / "CED_stub.nwb"
 session_description = "Enter session description here."
 
 # Manually insert the session start time
-session_start = datetime(1971, 1, 1, 1, 1, 1).astimezone()  # (Year, Month, Day, Hour, Minute, Second)
+session_start = datetime(1971, 1, 1, 1, 1, 1)  # (Year, Month, Day, Hour, Minute, Second)
 
 # Uncomment any subject fields you want to include
 subject_info = dict(
@@ -39,11 +39,12 @@ source_data = dict(
     CEDStimulus=dict(file_path=str(ced_file_path))
 )
 conversion_options = dict(
-    CEDRecording=dict(stub_test=stub_test)
+    CEDRecording=dict(stub_test=stub_test),
+    CEDStimulus=dict(stub_test=stub_test)
 )
 converter = CEDNWBConverter(source_data)
 metadata = converter.get_metadata()
-metadata['NWBFile'].update(session_description=session_description, session_start_time=session_start)
+metadata['NWBFile'].update(session_description=session_description, session_start_time=session_start.astimezone())
 metadata.update(Subject=subject_info)
 converter.run_conversion(
     nwbfile_path=str(nwbfile_path),
