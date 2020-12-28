@@ -101,7 +101,7 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
         for j, table in enumerate([mech_stim, laser_stim]):
             for row in conditions[j]:
                 table.add_row(dict(start_time=row[0], stop_time=row[1]))
-        check_module(nwbfile, 'behavior', "Contains behavioral data.").add_data_interface(mech_stim)
+        check_module(nwbfile, 'behavior', "Contains behavioral data.").add(mech_stim)
         check_module(nwbfile, 'behavior', "Contains behavioral data.").add(laser_stim)
 
         if stub_test or self.subset_channels is not None:
