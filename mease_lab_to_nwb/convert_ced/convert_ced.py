@@ -15,7 +15,7 @@ nwbfile_path = base_path / "CED_stub.nwb"
 session_description = "Enter session description here."
 
 # Manually insert the session start time
-session_start = datetime(1970, 1, 1, 1, 1, 1)  # (Year, Month, Day, Hour, Minute, Second)
+session_start = datetime(1971, 1, 1, 1, 1, 1).astimezone()  # (Year, Month, Day, Hour, Minute, Second)
 
 # Uncomment any subject fields you want to include
 subject_info = dict(
@@ -30,7 +30,7 @@ subject_info = dict(
 
 # Set some global conversion options here
 stub_test = True
-overwrite = False  # If the NWBFile exists at the path, replace it
+overwrite = True  # If the NWBFile exists at the path, replace it; otherwise it will append
 
 
 # Automatically performs conversion based on above filepaths and options
@@ -43,8 +43,8 @@ conversion_options = dict(
 )
 converter = CEDNWBConverter(source_data)
 metadata = converter.get_metadata()
-metadata['NWBFile'].update(session_description=session_description, session_start_time=session_start.astimezone())
-metadata['Subject'].update(subject_info)
+metadata['NWBFile'].update(session_description=session_description, session_start_time=session_start)
+metadata.update(Subject=subject_info)
 converter.run_conversion(
     nwbfile_path=str(nwbfile_path),
     metadata=metadata,

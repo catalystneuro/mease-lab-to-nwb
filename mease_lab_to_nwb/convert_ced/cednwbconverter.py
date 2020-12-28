@@ -1,11 +1,11 @@
 """Authors: Cody Baker and Ben Dichter."""
 from pathlib import Path
 from datetime import datetime
+from typing import Optional
 
 from nwb_conversion_tools import NWBConverter, CEDRecordingInterface
 
 from .cedstimulusinterface import CEDStimulusInterface
-
 
 class CEDNWBConverter(NWBConverter):
     data_interface_classes = dict(
@@ -27,7 +27,6 @@ class CEDNWBConverter(NWBConverter):
         super().__init__(source_data)
 
     def get_metadata(self):
-        """Auto-populate as much metadata as possible."""
         metadata = super().get_metadata()
         smrx_file_path = Path(self.data_interface_objects['CEDRecording'].source_data['file_path'])
         session_id = smrx_file_path.stem

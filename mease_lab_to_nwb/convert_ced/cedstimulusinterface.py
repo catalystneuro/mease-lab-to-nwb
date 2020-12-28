@@ -4,7 +4,9 @@ import numpy as np
 from pynwb import NWBFile, TimeSeries
 from pynwb.epoch import TimeIntervals
 from hdmf.backends.hdf5.h5_utils import H5DataIO
-from nwb_conversion_tools import CEDRecordingInterface
+from nwb_conversion_tools.baserecordingextractorinterface import BaseRecordingExtractorInterface
+from nwb_conversion_tools.json_schema_utils import get_schema_from_method_signature
+from spikeextractors import CEDRecordingExtractor
 
 
 def check_module(nwbfile, name, description=None):
@@ -63,21 +65,29 @@ def intervals_from_traces(traces):
     return conditions
 
 
-class CEDStimulusInterface(CEDRecordingInterface):
+class CEDStimulusInterface(BaseRecordingExtractorInterface):
     """Primary data interface class for converting CED mechanical and cortical laser stimuli."""
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict = None):
-        # Pressure values as TimeSeries
-        nwbfile.add_stimulus(
-            TimeSeries(
-                name='MechanicalPressure',
-                data=H5DataIO(self.recording_extractor.get_traces(0), compression="gzip"),
-                unit=self.recording_extractor._channel_smrxinfo[0]['unit'],
-                conversion=self.recording_extractor.get_channel_property(0, 'gain'),
-                rate=self.recording_extractor.get_sampling_frequency(),
-                description="Pressure sensor attached to the mechanical stimulus used to repeatedly evoke spiking."
+    RX = CEDRecordingExtractor
+
+    @classmethod
+    def get_source_schema(cls):
+        source_schema = get_schema_from_method_signature(
+            class_method=cls.RX.__init__,
+            exclude=['smrx_channel_ids']
+        )
+        source_schema.update(additionalProperties=True)
+        source_schema['properties'].update(
+            file_path=dict(
+                type=source_schema['properties']['file_path']['type'],
+                format="file",
+                description="path to data file"
             )
         )
+        return source_schema
+
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict = None, stub_test: bool = True):        
+        # Under 'processed - behavior' module add extracted on/off intervals
         conditions = intervals_from_traces(self.recording_extractor.get_traces(channel_ids=[1, 2]))
         mech_stim = TimeIntervals(
             name='MechanicalStimulus',
@@ -91,3 +101,20 @@ class CEDStimulusInterface(CEDRecordingInterface):
             table.add_row(dict(start_time=row[0], stop_time=row[1]))
         check_module(nwbfile, 'behavior', "Contains behavioral data.").add_data_interface(mech_stim)
         check_module(nwbfile, 'behavior', "Contains behavioral data.").add_data_interface(laser_stim)
+
+        if stub_test or self.subset_channels is not None:
+            recording = self.subset_recording(stub_test=stub_test)
+        else:
+            recording = self.recording_extractor
+
+        # Pressure values
+        nwbfile.add_stimulus(
+            TimeSeries(
+                name='MechanicalPressure',
+                data=H5DataIO(recording.get_traces(0), compression="gzip"),
+                unit=self.recording_extractor._channel_smrxinfo[0]['unit'],
+                conversion=recording.get_channel_property(0, 'gain'),
+                rate=recording.get_sampling_frequency(),
+                description="Pressure sensor attached to the mechanical stimulus used to repeatedly evoke spiking."
+            )
+        )
