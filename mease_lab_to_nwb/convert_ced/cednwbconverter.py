@@ -14,7 +14,7 @@ class CEDNWBConverter(NWBConverter):
     )
 
     def __init__(self, source_data):
-        channel_info = CEDRecordingInterface.get_all_channels_info(source_data['CEDRecording']['file_path'])
+        channel_info = self.data_interface_classes['CEDRecording'].RX.get_all_channels_info(source_data['CEDRecording']['file_path'])
         rhd_channels = []
         stim_channels = []
         for ch, info in channel_info.items():
