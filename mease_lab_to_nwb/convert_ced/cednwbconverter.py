@@ -1,27 +1,39 @@
 """Authors: Cody Baker and Ben Dichter."""
+from pathlib import Path
+
 from nwb_conversion_tools import NWBConverter, CEDRecordingInterface
-from spikeextractors import CEDRecordingExtractor
+
+from .cedstimulusinterface import CEDStimulusInterface
 
 
 class CEDNWBConverter(NWBConverter):
     data_interface_classes = dict(
         CEDRecording=CEDRecordingInterface,
+        CEDStimulus=CEDStimulusInterface
     )
 
     def __init__(self, source_data):
-        channel_info = CEDRecordingExtractor.get_all_channels_info(source_data['CEDRecording']['file_path'])
+        channel_info = self.data_interface_classes['CEDRecording'].RX.get_all_channels_info(
+            source_data['CEDRecording']['file_path']
+        )
         rhd_channels = []
+        stim_channels = []
         for ch, info in channel_info.items():
-            if "Rhd" in info["title"]:
+            if "Rhd" in info['title']:
                 rhd_channels.append(ch)
+            if info['title'] in ["CED_Mech", "MechTTL", "Laser"]:
+                stim_channels.append(ch)
         source_data['CEDRecording'].update(smrx_channel_ids=rhd_channels)
+        source_data['CEDStimulus'].update(smrx_channel_ids=stim_channels)
         super().__init__(source_data)
 
     def get_metadata(self):
-        """Auto-populate as much metadata as possible."""
         metadata = super().get_metadata()
+        smrx_file_path = Path(self.data_interface_objects['CEDRecording'].source_data['file_path'])
+        session_id = smrx_file_path.stem
         metadata['NWBFile'].update(
             institution="EMBL - Heidelberg",
-            lab="Mease"
+            lab="Mease",
+            session_id=session_id
         )
         return metadata
