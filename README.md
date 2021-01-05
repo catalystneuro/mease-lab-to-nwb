@@ -1,7 +1,7 @@
 # mease-lab-to-nwb
 
-* CED processing through SpikeInterface
-* CED conversion to NWB (under construction)
+* CED/Spike2 processing through SpikeInterface
+* CED/Spike2 conversion to NWB
 * Syntalos processing through SpikeInterface
 * Syntalos conversion to NWB (under construction)
 
