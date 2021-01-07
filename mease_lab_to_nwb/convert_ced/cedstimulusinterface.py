@@ -87,8 +87,7 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
         )
         return source_schema
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict = None, stub_test: bool = False):        
-        # Under 'processed - behavior' module add extracted on/off intervals
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict = None, stub_test: bool = False):
         conditions = intervals_from_traces(self.recording_extractor)
         mech_stim = TimeIntervals(
             name='MechanicalStimulus',
@@ -100,9 +99,10 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
         )
         for j, table in enumerate([mech_stim, laser_stim]):
             for row in conditions[j]:
-                table.add_row(dict(start_time=row[0], stop_time=row[1]))
-        check_module(nwbfile, 'behavior', "Contains behavioral data.").add(mech_stim)
-        check_module(nwbfile, 'behavior', "Contains behavioral data.").add(laser_stim)
+                table.add_row(dict(start_time=float(row[0]), stop_time=float(row[1])))
+        # TODO - these really should be IntervalSeries added to stimulus, rather than processing
+        check_module(nwbfile, 'stimulus', "Contains stimuli data.").add(mech_stim)
+        check_module(nwbfile, 'stimulus', "Contains stimuli data.").add(laser_stim)
 
         if stub_test or self.subset_channels is not None:
             recording = self.subset_recording(stub_test=stub_test)

@@ -1,9 +1,40 @@
 """Authors: Cody Baker and Ben Dichter."""
 from pathlib import Path
+from datetime import datetime
+from typing import Optional
 
 from nwb_conversion_tools import NWBConverter, CEDRecordingInterface
+import spikeextractors as se
+from pynwb import NWBHDF5IO
 
 from .cedstimulusinterface import CEDStimulusInterface
+
+
+def quick_write(ced_file_path: str, session_description: str, session_start: str, save_path: str,
+                sorting: Optional[se.SortingExtractor] = None,
+                recording_lfp: Optional[se.RecordingExtractor] = None,
+                overwrite: bool = False):
+    """Automatically extracts required session info from ced_file_path and writes NWBFile in spikeextractors."""
+    ced_file_path = Path(ced_file_path)
+    session_id = ced_file_path.stem
+    nwbfile_kwargs = dict(
+        session_description=session_description,
+        session_start_time=session_start.astimezone(),
+        session_id=session_id,
+    )
+    if sorting is not None:
+        se.NwbSortingExtractor.write_sorting(
+            sorting=sorting,
+            save_path=save_path,
+            overwrite=overwrite,
+            **nwbfile_kwargs
+        )
+    if recording_lfp is not None:
+        se.NwbRecordingExtractor.write_recording(
+            recording=recording_lfp,
+            save_path=save_path,
+            write_as_lfp=True
+        )
 
 
 class CEDNWBConverter(NWBConverter):

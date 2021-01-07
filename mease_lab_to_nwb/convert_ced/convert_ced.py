@@ -9,13 +9,13 @@ from mease_lab_to_nwb import CEDNWBConverter
 
 base_path = Path("D:/CED_example_data/Other example")
 ced_file_path = base_path / "m365_pt1_590-1190secs-001.smrx"
-nwbfile_path = base_path / "CED_stub.nwb"
+nwbfile_path = base_path / "CED.nwb"
 
 # Enter Session and Subject information here
 session_description = "Enter session description here."
 
 # Manually insert the session start time
-session_start = datetime(1971, 1, 1, 1, 1, 1)  # (Year, Month, Day, Hour, Minute, Second)
+session_start = datetime(1970, 1, 1)  # (Year, Month, Day)
 
 # Uncomment any subject fields you want to include
 subject_info = dict(
@@ -29,7 +29,7 @@ subject_info = dict(
 )
 
 # Set some global conversion options here
-stub_test = True
+stub_test = False
 overwrite = True  # If the NWBFile exists at the path, replace it; otherwise it will append
 
 
@@ -44,7 +44,7 @@ conversion_options = dict(
 )
 converter = CEDNWBConverter(source_data)
 metadata = converter.get_metadata()
-metadata['NWBFile'].update(session_description=session_description, session_start_time=session_start.astimezone())
+metadata['NWBFile'].update(session_description=session_description, session_start_time=session_start)
 metadata.update(Subject=subject_info)
 converter.run_conversion(
     nwbfile_path=str(nwbfile_path),
