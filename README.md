@@ -3,7 +3,7 @@
 * CED/Spike2 processing through SpikeInterface
 * CED/Spike2 conversion to NWB
 * Syntalos processing through SpikeInterface
-* Syntalos conversion to NWB (under construction)
+* Syntalos conversion to NWB
 
 ## Installation
 ```bash
