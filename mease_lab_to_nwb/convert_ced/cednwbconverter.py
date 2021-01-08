@@ -27,6 +27,8 @@ def quick_write(ced_file_path: str, session_description: str, session_start: str
             sorting=sorting,
             save_path=save_path,
             overwrite=overwrite,
+            skip_properties=['mda_max_channel'],
+            skip_features=['waveforms'],
             **nwbfile_kwargs
         )
     if recording_lfp is not None:
