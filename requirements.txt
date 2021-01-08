@@ -1,6 +1,6 @@
 numpy
 notebook
-pynwb
+pynwb==1.4.0
 h5py
 isodate
 sonpy
@@ -8,3 +8,5 @@ toml
 ndx-events
 edlio
 crc32c
+nwb-conversion-tools
+pyintan

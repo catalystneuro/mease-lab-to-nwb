@@ -35,6 +35,8 @@ def quick_write(intan_folder_path: str, session_description: str, save_path: str
             save_path=save_path,
             timestamps=timestamps,
             overwrite=overwrite,
+            skip_properties=['mda_max_channel'],
+            skip_features=['waveforms'],
             **nwbfile_kwargs
         )
     if recording_lfp is not None:
