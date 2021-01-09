@@ -5,11 +5,42 @@
 * Syntalos processing through SpikeInterface
 * Syntalos conversion to NWB
 
+
 ## Installation
+
+We provide an env file to create a conda environment. 
+From the terminal, run:
+
+```bash
+conda env create -f mease-env.yml
+conda activate measelab
+```
+
+Once in the `measelab` environment, we you can install [Phy](https://github.com/cortex-lab/phy) for manual curation:
+
+```bash
+pip install phy --pre --upgrade
+```
+
+Finally, you can install this package. If you plane to do modify the code, 
+you can install from source:
+
+```bash
+python setup.py develop
+```
+
+or you can install the package using pip (coming soon):
+
 ```bash
 pip install https://github.com/catalystneuro/mease-lab-to-nwb.git
 ```
 
+### Installing spikesorters
+
+The spike sorting pipeline is based on SpikeInterface. We highly recommend to read the 
+[documentation](https://spikeinterface.readthedocs.io/en/latest/) and watch this 1-hour [video](https://www.youtube.com/watch?v=fvKG_-xQ4D8&t=3364s&ab_channel=NeurodataWithoutBorders).
+
+Information about installing the different spike sorters can be found [here](https://spikeinterface.readthedocs.io/en/latest/sortersinfo.html).
 
 # How to use - Syntalos
 
