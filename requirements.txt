@@ -8,3 +8,4 @@ toml
 ndx-events
 edlio
 crc32c
+nwb-conversion-tools

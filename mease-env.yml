@@ -1,0 +1,32 @@
+name: measelab
+dependencies:
+  - python=3.8
+  - pip
+  - toml
+  - pip:
+    - numpy
+    - h5py
+    - cython
+    - tqdm
+    - click
+    - pillow
+    - scipy
+    - matplotlib
+    - scikit-learn
+    - pyqt5
+    - pyqtwebengine
+    - klusta
+    - klustakwik2
+    - jupyterlab
+    - pynwb
+    - isodate
+    - sonpy
+    - ndx-events
+    - crc32c
+    - https://github.com/SpikeInterface/spikeextractors/archive/master.zip
+    - https://github.com/SpikeInterface/spiketoolkit/archive/master.zip
+    - https://github.com/SpikeInterface/spikesorters/archive/master.zip
+    - https://github.com/SpikeInterface/spikecomparison/archive/master.zip
+    - https://github.com/SpikeInterface/spikewidgets/archive/master.zip
+    - nwb-conversion-tools
+    - edlio
