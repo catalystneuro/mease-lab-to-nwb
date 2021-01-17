@@ -46,7 +46,7 @@ class SyntalosRecordingExtractor(MultiRecordingTimeExtractor):
         self._timestamps = _get_timestamps_with_tsync(self, tsync_files[0])
         self._timestamps = self._timestamps - self._timestamps[0]
 
-        self._kwargs = dict(file_paths=[str(file_path.absolute()) for file_path in file_paths])
+        self._kwargs = dict(folder_path=str(Path(folder_path).absolute()))
 
     def frame_to_time(self, frame):
         return self._timestamps[frame]
