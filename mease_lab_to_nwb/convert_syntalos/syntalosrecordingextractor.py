@@ -43,19 +43,8 @@ class SyntalosRecordingExtractor(MultiRecordingTimeExtractor):
             recordings.append(intan_recording)
 
         super().__init__(recordings)
-        self._timestamps = _get_timestamps_with_tsync(self, tsync_files[0])
-        self._timestamps = self._timestamps - self._timestamps[0]
-
-        self._kwargs = dict(folder_path=str(Path(folder_path).absolute()))
-
-    def frame_to_time(self, frame):
-        return self._timestamps[frame]
-
-    def time_to_frame(self, time):
-        return np.searchsorted(self._timestamps, time)
-
-    def get_timestamps(self):
-        return self._timestamps
+        timestamps = _get_timestamps_with_tsync(self, tsync_files[0])
+        self.set_times(timestamps)
 
 
 def _get_timestamps_with_tsync(recording, tsync_file):

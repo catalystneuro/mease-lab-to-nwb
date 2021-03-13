@@ -16,7 +16,7 @@ def all_equal(lst: list):
     return len(set(lst)) == 1
 
 
-def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = False, use_timestamps: bool = False):
+def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = False, use_times: bool = False):
     """
     Add accelerometer data from a single rhd file to the NWBFile.
 
@@ -59,7 +59,7 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
         resolution=np.nan,
         conversion=conversion
     )
-    if not use_timestamps:
+    if not use_times:
         tseries_kwargs.update(rate=accel_sampling_rate)
     else:
         accel_timestamps = recording.frame_to_time(
@@ -84,8 +84,10 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
         temp_intan_interface = IntanRecordingInterface(file_path=intan_filepath)
         return temp_intan_interface.get_metadata()
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict, stub_test: bool = False, add_accelerometer: bool = True,
-                       use_timestamps: bool = True):
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict, stub_test: bool = False,
+                       add_accelerometer: bool = True,
+                       overwrite: bool = False,
+                       use_times: bool = True):
         """
         Primary conversion function for Syntalos recordings.
 
@@ -97,23 +99,28 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
             If true, truncates all data to a small size for fast testing. The default is False.
         add_accelerometer: bool, optional
             If true, adds the separate recording channels for accelerometer information. The default is True.
-        use_timestamps: bool, optional
+        use_times: bool, optional
             If true, uses the timestamps obtained from the tsync file. The default is True.
+        overwrite: bool
+            If using save_path, whether or not to overwrite the NWBFile if it already exists.
+
         """
         if stub_test or self.subset_channels is not None:
             recording = self.subset_recording(stub_test=stub_test)
         else:
             recording = self.recording_extractor
+
         NwbRecordingExtractor.write_recording(
             recording=recording,
             nwbfile=nwbfile,
             metadata=metadata,
-            use_timestamps=use_timestamps
+            use_times=use_times,
+            overwrite=overwrite
         )
         if add_accelerometer:
             write_accelerometer_data(
                 nwbfile=nwbfile,
                 recording=recording,
                 stub_test=stub_test,
-                use_timestamps=use_timestamps
+                use_times=use_times
             )
