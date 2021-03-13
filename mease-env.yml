@@ -23,10 +23,10 @@ dependencies:
     - sonpy
     - ndx-events
     - crc32c
-    - https://github.com/SpikeInterface/spikeextractors/archive/master.zip
-    - https://github.com/SpikeInterface/spiketoolkit/archive/master.zip
-    - https://github.com/SpikeInterface/spikesorters/archive/master.zip
-    - https://github.com/SpikeInterface/spikecomparison/archive/master.zip
-    - https://github.com/SpikeInterface/spikewidgets/archive/master.zip
+    - spikeextractors==0.9.5
+    - spiketoolkit==0.7.4
+    - spikesorters==0.4.4
+    - spikecomparison==0.3.2
+    - spikewidgets==0.5.2
     - nwb-conversion-tools
     - edlio

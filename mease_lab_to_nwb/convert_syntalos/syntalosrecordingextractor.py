@@ -39,12 +39,13 @@ class SyntalosRecordingExtractor(MultiRecordingTimeExtractor):
 
         recordings = []
         for file_path in files_sorted:
-            intan_recording = IntanRecordingExtractor(file_path=file_path, dtype="int16")
+            intan_recording = IntanRecordingExtractor(file_path=file_path)
             recordings.append(intan_recording)
 
         super().__init__(recordings)
         timestamps = _get_timestamps_with_tsync(self, tsync_files[0])
         self.set_times(timestamps)
+        self._kwargs = {"folder_path": str(Path(folder_path).absolute())}
 
 
 def _get_timestamps_with_tsync(recording, tsync_file):
