@@ -19,7 +19,7 @@ OptionalArrayType = Optional[Union[list, np.ndarray]]
 def quick_write(intan_folder_path: str, session_description: str, save_path: str,
                 sorting: Optional[se.SortingExtractor] = None,
                 recording_lfp: Optional[se.RecordingExtractor] = None,
-                timestamps: OptionalArrayType = None, overwrite: bool = False):
+                use_times: bool = True, overwrite: bool = False):
     """Automatically extracts required session info from intan_folder_path and writes NWBFile in spikeextractors."""
     intan_folder_path = Path(intan_folder_path)
     session_id = [x for x in intan_folder_path.iterdir() if x.suffix == ".rhd"][0].stem
@@ -33,7 +33,7 @@ def quick_write(intan_folder_path: str, session_description: str, save_path: str
         se.NwbSortingExtractor.write_sorting(
             sorting=sorting,
             save_path=save_path,
-            timestamps=timestamps,
+            use_times=use_times,
             overwrite=overwrite,
             **nwbfile_kwargs
         )
@@ -79,7 +79,7 @@ class SyntalosNWBConverter(NWBConverter):
                        conversion_options: Optional[dict] = None, overwrite: bool = False,
                        sorting: Optional[se.SortingExtractor] = None,
                        recording_lfp: Optional[se.RecordingExtractor] = None,
-                       timestamps: OptionalArrayType = None):
+                       use_times: bool = True):
         """
         Build nwbfile object, auto-populate with minimal values if missing.
 
@@ -94,8 +94,8 @@ class SyntalosNWBConverter(NWBConverter):
             A SortingExtractor object to write to the NWBFile.
         recording_lfp : RecordingExtractor, optional
             A RecordingExtractor object to write to the NWBFile.
-        timestamps : ArrayType, optional
-            Array of timestamps obtained from tsync file.
+        use_times : bool
+            If True, tsync timestamps are written to NWB.
         """
         nwbfile = super().run_conversion(
             metadata=metadata,
@@ -106,7 +106,7 @@ class SyntalosNWBConverter(NWBConverter):
             se.NwbSortingExtractor.write_sorting(
                     sorting=sorting,
                     nwbfile=nwbfile,
-                    timestamps=timestamps
+                    use_times=use_times
             )
         if recording_lfp is not None:
             se.NwbRecordingExtractor.write_recording(
