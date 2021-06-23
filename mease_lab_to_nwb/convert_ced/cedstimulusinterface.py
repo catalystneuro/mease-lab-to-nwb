@@ -4,7 +4,7 @@ import numpy as np
 from pynwb import NWBFile, TimeSeries
 from pynwb.epoch import TimeIntervals
 from hdmf.backends.hdf5.h5_utils import H5DataIO
-from nwb_conversion_tools.baserecordingextractorinterface import BaseRecordingExtractorInterface
+from nwb_conversion_tools.datainterfaces.ecephys.baserecordingextractorinterface import BaseRecordingExtractorInterface
 from nwb_conversion_tools.utils.json_schema import get_schema_from_method_signature
 from spikeextractors import RecordingExtractor, CEDRecordingExtractor
 
