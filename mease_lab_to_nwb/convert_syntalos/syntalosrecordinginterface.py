@@ -4,7 +4,7 @@ from pathlib import Path
 
 from spikeextractors import NwbRecordingExtractor, SubRecordingExtractor
 from pynwb import NWBFile, TimeSeries
-from nwb_conversion_tools.baserecordingextractorinterface import BaseRecordingExtractorInterface
+from nwb_conversion_tools.datainterfaces.ecephys.baserecordingextractorinterface import BaseRecordingExtractorInterface
 from nwb_conversion_tools import IntanRecordingInterface
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
