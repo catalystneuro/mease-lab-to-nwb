@@ -1,0 +1,33 @@
+name: CI
+
+on: push
+
+jobs:
+  install-and-test:
+    name: ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, macos-10.15, windows-2019]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Create measelab conda environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          auto-activate-base: false
+          python-version: 3.8
+          activate-environment: measelab
+          environment-file: mease-env.yml
+      - name: Display conda env info
+        run: conda info && conda list
+      - name: Install mease-lab-to-nwb
+        run: pip install .
+      - name: Install test requirements
+        run: pip install -r requirements-test.txt
+      - name: Run tests
+        run: pytest -v
