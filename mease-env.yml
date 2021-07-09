@@ -29,5 +29,5 @@ dependencies:
     - spikesorters==0.4.4
     - spikecomparison==0.3.2
     - spikewidgets==0.5.2
-    - nwb-conversion-tools
+    - git+https://github.com/catalystneuro/nwb-conversion-tools.git@master
     - edlio
