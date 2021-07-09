@@ -18,6 +18,8 @@ dependencies:
     - klusta
     - klustakwik2
     - jupyterlab
+    - Pint
+    - xxhash
     - pynwb
     - isodate
     - sonpy
