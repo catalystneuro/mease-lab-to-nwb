@@ -23,7 +23,8 @@ dependencies:
     - sonpy
     - ndx-events
     - crc32c
-    - spikeextractors==0.9.5
+    - git+https://github.com/NeuralEnsemble/python-neo.git@master
+    - git+https://github.com/SpikeInterface/spikeextractors.git@master
     - spiketoolkit==0.7.4
     - spikesorters==0.4.4
     - spikecomparison==0.3.2
