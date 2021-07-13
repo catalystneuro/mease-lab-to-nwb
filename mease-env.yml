@@ -18,15 +18,18 @@ dependencies:
     - klusta
     - klustakwik2
     - jupyterlab
+    - Pint
+    - xxhash
     - pynwb
     - isodate
     - sonpy
     - ndx-events
     - crc32c
-    - spikeextractors==0.9.5
+    - git+https://github.com/NeuralEnsemble/python-neo.git@master
+    - git+https://github.com/SpikeInterface/spikeextractors.git@master
     - spiketoolkit==0.7.4
     - spikesorters==0.4.4
     - spikecomparison==0.3.2
     - spikewidgets==0.5.2
-    - nwb-conversion-tools
+    - git+https://github.com/catalystneuro/nwb-conversion-tools.git@master
     - edlio
