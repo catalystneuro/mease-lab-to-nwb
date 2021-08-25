@@ -113,7 +113,7 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
         nwbfile.add_stimulus(
             TimeSeries(
                 name='MechanicalPressure',
-                data=H5DataIO(recording.get_traces(0), compression="gzip"),
+                data=H5DataIO(recording.get_traces(0).T, compression="gzip"),
                 unit=self.recording_extractor._channel_smrxinfo[0]['unit'],
                 conversion=recording.get_channel_property(0, 'gain'),
                 rate=recording.get_sampling_frequency(),
