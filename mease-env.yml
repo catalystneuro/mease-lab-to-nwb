@@ -33,3 +33,5 @@ dependencies:
     - spikewidgets==0.5.2
     - nwb-conversion-tools
     - edlio
+    - psutil
+    - opencv-python
