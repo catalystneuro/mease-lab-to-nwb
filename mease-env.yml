@@ -22,14 +22,14 @@ dependencies:
     - xxhash
     - pynwb
     - isodate
-    - sonpy
+    - sonpy==1.8.5
     - ndx-events
     - crc32c
-    - git+https://github.com/NeuralEnsemble/python-neo.git@master
-    - git+https://github.com/SpikeInterface/spikeextractors.git@master
+    - neo==0.10.0
+    - spikeextractors==0.9.8
     - spiketoolkit==0.7.4
     - spikesorters==0.4.4
     - spikecomparison==0.3.2
     - spikewidgets==0.5.2
-    - git+https://github.com/catalystneuro/nwb-conversion-tools.git@master
+    - nwb-conversion-tools
     - edlio
