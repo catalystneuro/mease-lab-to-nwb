@@ -41,8 +41,11 @@ def intervals_from_traces(recording: RecordingExtractor):
         threshold = np.ptp(tr) / 2 + np.min(tr)
         crossings = np.array(tr > threshold).astype("int8")
 
-        rising = np.nonzero(np.diff(crossings, 1) > 0)[0]
-        falling = np.nonzero(np.diff(crossings, 1) < 0)[0]
+        all_rising = np.nonzero(np.diff(crossings, 1) > 0)[0]
+        all_falling = np.nonzero(np.diff(crossings, 1) < 0)[0]
+        n_rise_fall_pairs = min(len(all_rising), len(all_falling))
+        rising = all_rising[:n_rise_fall_pairs]
+        falling = all_falling[:n_rise_fall_pairs]
 
         ttl = np.concatenate((rising, falling))
         sort_order = np.argsort(ttl)
