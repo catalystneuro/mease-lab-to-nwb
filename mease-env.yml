@@ -32,6 +32,7 @@ dependencies:
     - spikecomparison==0.3.2
     - spikewidgets==0.5.2
     - nwb-conversion-tools
+    - nwbwidgets
     - edlio
     - psutil
     - opencv-python
