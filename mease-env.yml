@@ -36,3 +36,4 @@ dependencies:
     - edlio
     - psutil
     - opencv-python
+    - jupyterlab-nvdashboard
