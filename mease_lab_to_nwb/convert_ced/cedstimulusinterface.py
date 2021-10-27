@@ -33,31 +33,46 @@ def check_module(nwbfile, name, description=None):
 
 
 def intervals_from_traces(recording: RecordingExtractor, channel_id):
-    """Extract interval times from TTL pulses."""
+    """Extract interval times from TTL pulses.
+
+    Returns an array of timestamps with each interval start and interval stop time,
+    and a corresponding array of int8: +1 for start, -1 for stop.
+    See https://pynwb.readthedocs.io/en/stable/pynwb.misc.html?highlight=intervalseries#pynwb.misc.IntervalSeries
+
+    Uses a heuristic to detect when TTL data was not collected (and signal is just zero + noise):
+    if the fraction of points outside the upper/lower quartiles is too low, returns empty arrays.
+    This avoids conversion of pure noise into a huge number of spurious intervals.
+    """
     tr = recording.get_traces(channel_id)[0]
     dt = 1.0 / recording.get_sampling_frequency()
 
     timestamps = []
     data = []
     min_value = np.amin(tr)
-    max_value = np.amax(tr)
-    threshold = min_value + 0.5 * (max_value - min_value)
+    peak_to_peak = np.ptp(tr)
+    threshold = min_value + 0.5 * peak_to_peak
+    n_upper_quartile = np.sum(tr > min_value + 0.75 * peak_to_peak)
+    n_lower_quartile = np.sum(tr < min_value + 0.25 * peak_to_peak)
+    fraction = (n_upper_quartile + n_lower_quartile) / len(tr)
+    if fraction < 0.75:
+        print(f"Fraction of points in upper/lower quartiles too low: {fraction}. Assuming there is no TTL pulse data.")
+        return np.array([]), np.array([], dtype="int8")
     i = 0
     n = len(tr)
-    if tr[0] > threshold:
-        while i < n and tr[i] > threshold:
-            i = i+1
+    while i < n and tr[i] > threshold:
+        i = i + 1
+    if i > 0:
         print(f"Warning: trace starts above threshold - skipped first {i} points")
     try:
         while i < n:
             while tr[i] <= threshold:
-                i = i+1
-            # start
+                i = i + 1
+            # start interval
             timestamps.append(i * dt)
             data.append(+1)
             while tr[i] > threshold:
-                i = i+1
-            # stop
+                i = i + 1
+            # stop interval
             timestamps.append(i * dt)
             data.append(-1)
     except IndexError:
