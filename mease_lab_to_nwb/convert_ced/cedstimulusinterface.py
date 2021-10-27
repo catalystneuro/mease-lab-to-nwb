@@ -3,6 +3,8 @@ import numpy as np
 
 from pynwb import NWBFile, TimeSeries
 from pynwb.epoch import TimeIntervals
+from pynwb.ogen import OptogeneticSeries, OptogeneticStimulusSite
+from pynwb.device import Device
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from nwb_conversion_tools.datainterfaces.ecephys.baserecordingextractorinterface import BaseRecordingExtractorInterface
 from nwb_conversion_tools.utils.json_schema import get_schema_from_method_signature
@@ -121,5 +123,28 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
                 conversion=recording.get_channel_property(0, 'gain'),
                 rate=recording.get_sampling_frequency(),
                 description="Pressure sensor attached to the mechanical stimulus used to repeatedly evoke spiking."
+            )
+        )
+
+        # Laser as optogenetic stimulus
+        ogen_device = nwbfile.create_device(
+            name='ogen_device',
+            description='ogen description'
+        )
+        ogen_site = OptogeneticStimulusSite(
+            name="name",
+            device=ogen_device,
+            description='description',
+            excitation_lambda=1.0,
+            location='location'
+        )
+        nwbfile.add_ogen_site(ogen_site)
+        nwbfile.add_stimulus(
+            OptogeneticSeries(
+                name='Laser',
+                data=recording.get_traces(2)[0],
+                site=ogen_site,
+                rate=recording.get_sampling_frequency(),
+                description="Laser TTL."
             )
         )
