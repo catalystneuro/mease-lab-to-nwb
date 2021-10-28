@@ -2,7 +2,7 @@
 import numpy as np
 
 from pynwb import NWBFile, TimeSeries
-from pynwb.epoch import TimeIntervals
+from pynwb.misc import IntervalSeries
 from pynwb.ogen import OptogeneticSeries, OptogeneticStimulusSite
 from pynwb.device import Device
 from hdmf.backends.hdf5.h5_utils import H5DataIO
@@ -32,43 +32,56 @@ def check_module(nwbfile, name, description=None):
         return nwbfile.create_processing_module(name, description)
 
 
-def intervals_from_traces(recording: RecordingExtractor):
-    """Extract interval times from TTL pulses."""
-    traces = recording.get_traces(channel_ids=[1, 2])
-    sf = recording.get_sampling_frequency()
+def intervals_from_traces(recording: RecordingExtractor, channel_id):
+    """Extract interval times from TTL pulses.
 
-    ttls = []
-    states = []
-    for tr in traces:
-        threshold = np.ptp(tr) / 2 + np.min(tr)
-        crossings = np.array(tr > threshold).astype("int8")
+    Returns an array of timestamps with each interval start and interval stop time,
+    and a corresponding array of int8: +1 for start, -1 for stop.
+    See https://pynwb.readthedocs.io/en/stable/pynwb.misc.html?highlight=intervalseries#pynwb.misc.IntervalSeries
 
-        all_rising = np.nonzero(np.diff(crossings, 1) > 0)[0]
-        all_falling = np.nonzero(np.diff(crossings, 1) < 0)[0]
-        n_rise_fall_pairs = min(len(all_rising), len(all_falling))
-        rising = all_rising[:n_rise_fall_pairs]
-        falling = all_falling[:n_rise_fall_pairs]
+    Uses a heuristic to detect when TTL data was not collected (and signal is just zero + noise):
+    if the fraction of points outside the upper/lower quartiles is too low, returns empty arrays.
+    This avoids conversion of pure noise into a huge number of spurious intervals.
+    """
+    tr = recording.get_traces(channel_id)[0]
+    dt = 1.0 / recording.get_sampling_frequency()
 
-        ttl = np.concatenate((rising, falling))
-        sort_order = np.argsort(ttl)
-        ttl = np.sort(ttl)
-        state = [1] * len(rising) + [-1] * len(falling)
-        state = np.array(state)[sort_order]
-
-        ttls.append(ttl)
-        states.append(state)
-
-    conditions = []
-    for ttl, state in zip(ttls, states):
-        assert len(ttl[state == 1]) == len(ttl[state == -1]), "Different number of rising/falling edges!"
-        condition = np.zeros((len(ttl[state == 1]), 2), dtype="int")
-
-        condition[:, 0] = ttl[state == 1] / sf
-        condition[:, 1] = ttl[state == -1] / sf
-
-        conditions.append(condition)
-
-    return conditions
+    timestamps = []
+    data = []
+    min_value = np.amin(tr)
+    peak_to_peak = np.ptp(tr)
+    threshold = min_value + 0.5 * peak_to_peak
+    n_upper_quartile = np.sum(tr > min_value + 0.75 * peak_to_peak)
+    n_lower_quartile = np.sum(tr < min_value + 0.25 * peak_to_peak)
+    fraction = (n_upper_quartile + n_lower_quartile) / len(tr)
+    if fraction < 0.75:
+        print(f"Fraction of points in upper/lower quartiles too low: {fraction}. Assuming there is no TTL pulse data.")
+        return np.array([]), np.array([], dtype="int8")
+    i = 0
+    n = len(tr)
+    while i < n and tr[i] > threshold:
+        i = i + 1
+    if i > 0:
+        print(f"Warning: trace starts above threshold - skipped first {i} points")
+    try:
+        while i < n:
+            while tr[i] <= threshold:
+                i = i + 1
+            # start interval
+            timestamps.append(i * dt)
+            data.append(+1)
+            while tr[i] > threshold:
+                i = i + 1
+            # stop interval
+            timestamps.append(i * dt)
+            data.append(-1)
+    except IndexError:
+        assert i == len(tr)
+    if len(data) > 0 and data[-1] == 1:
+        print("Warning: trace ends above threshold: ignoring last partial interval")
+        timestamps.pop()
+        data.pop()
+    return np.array(timestamps), np.array(data, dtype="int8")
 
 
 class CEDStimulusInterface(BaseRecordingExtractorInterface):
@@ -93,22 +106,24 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
         return source_schema
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict = None, stub_test: bool = False):
-        conditions = intervals_from_traces(self.recording_extractor)
-        mech_stim = TimeIntervals(
-            name='MechanicalStimulus',
-            description="Activation times inferred from TTL commands for mechanical stimulus."
+        mech_timestamps, mech_data = intervals_from_traces(self.recording_extractor, 1)
+        nwbfile.add_stimulus(
+            IntervalSeries(
+                name='MechanicalStimulus',
+                description="Activation times inferred from TTL commands for mechanical stimulus.",
+                data=mech_data,
+                timestamps=mech_timestamps
+            )
         )
-        laser_stim = TimeIntervals(
-            name='LaserStimulus',
-            description="Activation times inferred from TTL commands for cortical laser stimulus."
+        laser_timestamps, laser_data = intervals_from_traces(self.recording_extractor, 2)
+        nwbfile.add_stimulus(
+            IntervalSeries(
+                name='LaserStimulus',
+                description="Activation times inferred from TTL commands for cortical laser stimulus.",
+                data=laser_data,
+                timestamps=laser_timestamps
+            )
         )
-        for j, table in enumerate([mech_stim, laser_stim]):
-            for row in conditions[j]:
-                table.add_row(dict(start_time=float(row[0]), stop_time=float(row[1])))
-        # TODO - these really should be IntervalSeries added to stimulus, rather than processing
-        check_module(nwbfile, 'stimulus', "Contains stimuli data.").add(mech_stim)
-        check_module(nwbfile, 'stimulus', "Contains stimuli data.").add(laser_stim)
-
         if stub_test or self.subset_channels is not None:
             recording = self.subset_recording(stub_test=stub_test)
         else:
