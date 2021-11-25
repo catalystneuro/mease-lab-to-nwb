@@ -26,6 +26,7 @@ dependencies:
     - ndx-events
     - crc32c
     - neo==0.10.0
+    - spikeinterface
     - spikeextractors==0.9.8
     - spiketoolkit==0.7.4
     - spikesorters==0.4.4
