@@ -35,18 +35,18 @@ overwrite = False  # If the NWBFile exists at the path, replace it
 source_data = dict(
     SyntalosEvent=dict(file_path=str(event_file_path.absolute())),
     SyntalosImage=dict(folder_path=str(video_folder_path.absolute())),
-    SyntalosRecording=dict(folder_path=str(intan_folder_path.absolute()))
+    SyntalosRecording=dict(folder_path=str(intan_folder_path.absolute())),
 )
 conversion_options = dict(
     SyntalosRecording=dict(stub_test=stub_test, use_times=use_tsync_timestamps)
 )
 converter = SyntalosNWBConverter(source_data)
 metadata = converter.get_metadata()
-metadata['NWBFile'].update(session_description=session_description)
-metadata['Subject'].update(subject_info)
+metadata["NWBFile"].update(session_description=session_description)
+metadata["Subject"].update(subject_info)
 converter.run_conversion(
     nwbfile_path=str(nwbfile_path.absolute()),
     metadata=metadata,
     conversion_options=conversion_options,
-    overwrite=overwrite
+    overwrite=overwrite,
 )

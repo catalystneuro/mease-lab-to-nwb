@@ -16,10 +16,15 @@ from .syntalosrecordinginterface import SyntalosRecordingInterface
 OptionalArrayType = Optional[Union[list, np.ndarray]]
 
 
-def quick_write(intan_folder_path: str, session_description: str, save_path: str,
-                sorting: Optional[se.SortingExtractor] = None,
-                recording_lfp: Optional[se.RecordingExtractor] = None,
-                use_times: bool = True, overwrite: bool = False):
+def quick_write(
+    intan_folder_path: str,
+    session_description: str,
+    save_path: str,
+    sorting: Optional[se.SortingExtractor] = None,
+    recording_lfp: Optional[se.RecordingExtractor] = None,
+    use_times: bool = True,
+    overwrite: bool = False,
+):
     """Automatically extracts required session info from intan_folder_path and writes NWBFile in spikeextractors."""
     intan_folder_path = Path(intan_folder_path)
     session_id = [x for x in intan_folder_path.iterdir() if x.suffix == ".rhd"][0].stem
@@ -35,13 +40,11 @@ def quick_write(intan_folder_path: str, session_description: str, save_path: str
             save_path=save_path,
             use_times=use_times,
             overwrite=overwrite,
-            **nwbfile_kwargs
+            **nwbfile_kwargs,
         )
     if recording_lfp is not None:
         se.NwbRecordingExtractor.write_recording(
-            recording=recording_lfp,
-            save_path=save_path,
-            write_as_lfp=True
+            recording=recording_lfp, save_path=save_path, write_as_lfp=True
         )
 
 
@@ -51,35 +54,43 @@ class SyntalosNWBConverter(NWBConverter):
     data_interface_classes = dict(
         SyntalosEvent=SyntalosEventInterface,
         SyntalosImage=SyntalosImageInterface,
-        SyntalosRecording=SyntalosRecordingInterface
+        SyntalosRecording=SyntalosRecordingInterface,
     )
 
     def get_metadata(self):
         metadata = super().get_metadata()
-        intan_folder_path = Path(self.data_interface_objects['SyntalosRecording'].source_data['folder_path'])
-        session_id = [x for x in intan_folder_path.iterdir() if x.suffix == ".rhd"][0].stem
+        intan_folder_path = Path(
+            self.data_interface_objects["SyntalosRecording"].source_data["folder_path"]
+        )
+        session_id = [x for x in intan_folder_path.iterdir() if x.suffix == ".rhd"][
+            0
+        ].stem
         session_start = datetime.strptime(session_id[-13:], "%y%m%d_%H%M%S")
-        metadata['NWBFile'].update(
+        metadata["NWBFile"].update(
             institution="EMBL - Heidelberg",
             lab="Mease",
             session_id=session_id,
-            session_start_time=session_start.astimezone()
+            session_start_time=session_start.astimezone(),
         )
         main_attr_file = intan_folder_path.parent / "attributes.toml"
         if main_attr_file.is_file():
             metadata.update(
-                Subject=dict(
-                    subject_id=toml.load(main_attr_file)['subject_id']
-                )
+                Subject=dict(subject_id=toml.load(main_attr_file)["subject_id"])
             )
 
         return metadata
 
-    def run_conversion(self, metadata: dict, nwbfile_path: Optional[str] = None, save_to_file: bool = True,
-                       conversion_options: Optional[dict] = None, overwrite: bool = False,
-                       sorting: Optional[se.SortingExtractor] = None,
-                       recording_lfp: Optional[se.RecordingExtractor] = None,
-                       use_times: bool = True):
+    def run_conversion(
+        self,
+        metadata: dict,
+        nwbfile_path: Optional[str] = None,
+        save_to_file: bool = True,
+        conversion_options: Optional[dict] = None,
+        overwrite: bool = False,
+        sorting: Optional[se.SortingExtractor] = None,
+        recording_lfp: Optional[se.RecordingExtractor] = None,
+        use_times: bool = True,
+    ):
         """
         Build nwbfile object, auto-populate with minimal values if missing.
 
@@ -98,26 +109,22 @@ class SyntalosNWBConverter(NWBConverter):
             If True, tsync timestamps are written to NWB.
         """
         nwbfile = super().run_conversion(
-            metadata=metadata,
-            save_to_file=False,
-            conversion_options=conversion_options
+            metadata=metadata, save_to_file=False, conversion_options=conversion_options
         )
         if sorting is not None:
             se.NwbSortingExtractor.write_sorting(
-                    sorting=sorting,
-                    nwbfile=nwbfile,
-                    use_times=use_times
+                sorting=sorting, nwbfile=nwbfile, use_times=use_times
             )
         if recording_lfp is not None:
             se.NwbRecordingExtractor.write_recording(
-                    recording=recording_lfp,
-                    nwbfile=nwbfile,
-                    write_as_lfp=True
+                recording=recording_lfp, nwbfile=nwbfile, write_as_lfp=True
             )
 
         if save_to_file:
             if nwbfile_path is None:
-                raise TypeError("A path to the output file must be provided, but nwbfile_path got value None")
+                raise TypeError(
+                    "A path to the output file must be provided, but nwbfile_path got value None"
+                )
 
             if Path(nwbfile_path).is_file() and not overwrite:
                 mode = "r+"

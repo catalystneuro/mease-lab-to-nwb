@@ -8,7 +8,7 @@
 
 ## Installation
 
-We provide an env file to create a conda environment. 
+We provide an env file to create a conda environment.
 From the terminal, run:
 
 ```bash
@@ -22,7 +22,7 @@ Once in the `measelab` environment, we you can install [Phy](https://github.com/
 pip install phy --pre --upgrade
 ```
 
-Finally, you can install this package. If you plane to do modify the code, 
+Finally, you can install this package. If you plane to do modify the code,
 you can install from source:
 
 ```bash
@@ -37,7 +37,7 @@ pip install https://github.com/catalystneuro/mease-lab-to-nwb.git
 
 ### Installing spikesorters
 
-The spike sorting pipeline is based on SpikeInterface. We highly recommend to read the 
+The spike sorting pipeline is based on SpikeInterface. We highly recommend to read the
 [documentation](https://spikeinterface.readthedocs.io/en/latest/) and watch this 1-hour [video](https://www.youtube.com/watch?v=fvKG_-xQ4D8&t=3364s&ab_channel=NeurodataWithoutBorders).
 
 Information about installing the different spike sorters can be found [here](https://spikeinterface.readthedocs.io/en/latest/sortersinfo.html).
