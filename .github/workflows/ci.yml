@@ -15,6 +15,14 @@ jobs:
         os: [ubuntu-20.04, macos-10.15, windows-2019]
     steps:
       - uses: actions/checkout@v2
+      - name: Cache conda
+        uses: actions/cache@v2
+        env:
+          # Increase this value to reset cache if etc/example-environment.yml has not changed
+          CACHE_NUMBER: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{hashFiles('mease-env.yml') }}
       - name: Create measelab conda environment
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -23,6 +31,7 @@ jobs:
           python-version: 3.8
           activate-environment: measelab
           environment-file: mease-env.yml
+          use-only-tar-bz2: true
       - name: Display conda env info
         run: conda info && conda list
       - name: Install mease-lab-to-nwb
