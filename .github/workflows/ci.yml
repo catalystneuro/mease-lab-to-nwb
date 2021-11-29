@@ -38,5 +38,10 @@ jobs:
         run: pip install .
       - name: Install test requirements
         run: pip install -r requirements-test.txt
+      - name: Get test data
+        run: |
+          cd tests/data
+          curl -kLSs https://github.com/ssciwr/mease-test-data/releases/download/rolling/data.tgz -o data.tgz
+          tar -xzvf data.tgz
       - name: Run tests
         run: pytest -v
