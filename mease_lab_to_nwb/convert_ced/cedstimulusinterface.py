@@ -6,7 +6,9 @@ from pynwb.misc import IntervalSeries
 from pynwb.ogen import OptogeneticSeries, OptogeneticStimulusSite
 from pynwb.device import Device
 from hdmf.backends.hdf5.h5_utils import H5DataIO
-from nwb_conversion_tools.datainterfaces.ecephys.baserecordingextractorinterface import BaseRecordingExtractorInterface
+from nwb_conversion_tools.datainterfaces.ecephys.baserecordingextractorinterface import (
+    BaseRecordingExtractorInterface,
+)
 from nwb_conversion_tools.utils.json_schema import get_schema_from_method_signature
 from spikeextractors import RecordingExtractor, CEDRecordingExtractor
 
@@ -32,22 +34,22 @@ def check_module(nwbfile, name, description=None):
         return nwbfile.create_processing_module(name, description)
 
 
-def intervals_from_traces(recording: RecordingExtractor, channel_id):
+def intervals_from_traces(
+    name: str, description: str, recording: RecordingExtractor, channel_id: int
+):
     """Extract interval times from TTL pulses.
 
-    Returns an array of timestamps with each interval start and interval stop time,
-    and a corresponding array of int8: +1 for start, -1 for stop.
+    Returns an IntervalSeries with an interval for each TTL pulse.
     See https://pynwb.readthedocs.io/en/stable/pynwb.misc.html?highlight=intervalseries#pynwb.misc.IntervalSeries
 
     Uses a heuristic to detect when TTL data was not collected (and signal is just zero + noise):
     if the fraction of points outside the upper/lower quartiles is too low, returns empty arrays.
     This avoids conversion of pure noise into a huge number of spurious intervals.
     """
+    interval_series = IntervalSeries(name, description, data=[], timestamps=[])
     tr = recording.get_traces(channel_id)[0]
     dt = 1.0 / recording.get_sampling_frequency()
 
-    timestamps = []
-    data = []
     min_value = np.amin(tr)
     peak_to_peak = np.ptp(tr)
     threshold = min_value + 0.5 * peak_to_peak
@@ -55,8 +57,10 @@ def intervals_from_traces(recording: RecordingExtractor, channel_id):
     n_lower_quartile = np.sum(tr < min_value + 0.25 * peak_to_peak)
     fraction = (n_upper_quartile + n_lower_quartile) / len(tr)
     if fraction < 0.75:
-        print(f"Fraction of points in upper/lower quartiles too low: {fraction}. Assuming there is no TTL pulse data.")
-        return np.array([]), np.array([], dtype="int8")
+        print(
+            f"Fraction of points in upper/lower quartiles too low: {fraction}. Assuming there is no TTL pulse data."
+        )
+        return interval_series
     i = 0
     n = len(tr)
     while i < n and tr[i] > threshold:
@@ -67,21 +71,14 @@ def intervals_from_traces(recording: RecordingExtractor, channel_id):
         while i < n:
             while tr[i] <= threshold:
                 i = i + 1
-            # start interval
-            timestamps.append(i * dt)
-            data.append(+1)
+            interval_start = i * dt
             while tr[i] > threshold:
                 i = i + 1
-            # stop interval
-            timestamps.append(i * dt)
-            data.append(-1)
+            interval_stop = i * dt
+            interval_series.add_interval(interval_start, interval_stop)
     except IndexError:
         assert i == len(tr)
-    if len(data) > 0 and data[-1] == 1:
-        print("Warning: trace ends above threshold: ignoring last partial interval")
-        timestamps.pop()
-        data.pop()
-    return np.array(timestamps), np.array(data, dtype="int8")
+    return interval_series
 
 
 class CEDStimulusInterface(BaseRecordingExtractorInterface):
@@ -92,36 +89,35 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
     @classmethod
     def get_source_schema(cls):
         source_schema = get_schema_from_method_signature(
-            class_method=cls.RX.__init__,
-            exclude=['smrx_channel_ids']
+            class_method=cls.RX.__init__, exclude=["smrx_channel_ids"]
         )
         source_schema.update(additionalProperties=True)
-        source_schema['properties'].update(
+        source_schema["properties"].update(
             file_path=dict(
-                type=source_schema['properties']['file_path']['type'],
+                type=source_schema["properties"]["file_path"]["type"],
                 format="file",
-                description="path to data file"
+                description="path to data file",
             )
         )
         return source_schema
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict = None, stub_test: bool = False):
-        mech_timestamps, mech_data = intervals_from_traces(self.recording_extractor, 1)
+    def run_conversion(
+        self, nwbfile: NWBFile, metadata: dict = None, stub_test: bool = False
+    ):
         nwbfile.add_stimulus(
-            IntervalSeries(
-                name='MechanicalStimulus',
-                description="Activation times inferred from TTL commands for mechanical stimulus.",
-                data=mech_data,
-                timestamps=mech_timestamps
+            intervals_from_traces(
+                "MechanicalStimulus",
+                "Activation times inferred from TTL commands for mechanical stimulus.",
+                self.recording_extractor,
+                1,
             )
         )
-        laser_timestamps, laser_data = intervals_from_traces(self.recording_extractor, 2)
         nwbfile.add_stimulus(
-            IntervalSeries(
-                name='LaserStimulus',
-                description="Activation times inferred from TTL commands for cortical laser stimulus.",
-                data=laser_data,
-                timestamps=laser_timestamps
+            intervals_from_traces(
+                "LaserStimulus",
+                "Activation times inferred from TTL commands for cortical laser stimulus.",
+                self.recording_extractor,
+                2,
             )
         )
         if stub_test or self.subset_channels is not None:
@@ -132,34 +128,33 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
         # Pressure values
         nwbfile.add_stimulus(
             TimeSeries(
-                name='MechanicalPressure',
+                name="MechanicalPressure",
                 data=H5DataIO(recording.get_traces(0).T, compression="gzip"),
-                unit=self.recording_extractor._channel_smrxinfo[0]['unit'],
-                conversion=recording.get_channel_property(0, 'gain'),
+                unit=self.recording_extractor._channel_smrxinfo[0]["unit"],
+                conversion=recording.get_channel_property(0, "gain"),
                 rate=recording.get_sampling_frequency(),
-                description="Pressure sensor attached to the mechanical stimulus used to repeatedly evoke spiking."
+                description="Pressure sensor attached to the mechanical stimulus used to repeatedly evoke spiking.",
             )
         )
 
         # Laser as optogenetic stimulus
         ogen_device = nwbfile.create_device(
-            name='ogen_device',
-            description='ogen description'
+            name="ogen_device", description="ogen description"
         )
         ogen_site = OptogeneticStimulusSite(
             name="name",
             device=ogen_device,
-            description='description',
+            description="description",
             excitation_lambda=1.0,
-            location='location'
+            location="location",
         )
         nwbfile.add_ogen_site(ogen_site)
         nwbfile.add_stimulus(
             OptogeneticSeries(
-                name='Laser',
+                name="Laser",
                 data=recording.get_traces(2)[0],
                 site=ogen_site,
                 rate=recording.get_sampling_frequency(),
-                description="Laser TTL."
+                description="Laser TTL.",
             )
         )
