@@ -4,7 +4,9 @@ from pathlib import Path
 
 from spikeextractors import NwbRecordingExtractor, SubRecordingExtractor
 from pynwb import NWBFile, TimeSeries
-from nwb_conversion_tools.datainterfaces.ecephys.baserecordingextractorinterface import BaseRecordingExtractorInterface
+from nwb_conversion_tools.datainterfaces.ecephys.baserecordingextractorinterface import (
+    BaseRecordingExtractorInterface,
+)
 from nwb_conversion_tools import IntanRecordingInterface
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
@@ -16,7 +18,9 @@ def all_equal(lst: list):
     return len(set(lst)) == 1
 
 
-def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = False, use_times: bool = False):
+def write_accelerometer_data(
+    nwbfile: NWBFile, recording, stub_test: bool = False, use_times: bool = False
+):
     """
     Add accelerometer data from a single rhd file to the NWBFile.
 
@@ -26,24 +30,41 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
         this_recording = recording._parent_recording
     else:
         this_recording = recording
-    accel_channels = np.array([ch for ch in this_recording._recordings[0]._recording._anas_chan if 'AUX' in ch['name']])
-    channel_conversion = [x['gain'] for x in accel_channels]
-    accel_channel_units = [x['units'] for x in accel_channels]
-    accel_channel_sampling_rate = [x['sampling_rate'] for x in accel_channels]
+    accel_channels = np.array(
+        [
+            ch
+            for ch in this_recording._recordings[0]._recording._anas_chan
+            if "AUX" in ch["name"]
+        ]
+    )
+    channel_conversion = [x["gain"] for x in accel_channels]
+    accel_channel_units = [x["units"] for x in accel_channels]
+    accel_channel_sampling_rate = [x["sampling_rate"] for x in accel_channels]
 
     if not all_equal(channel_conversion):
-        raise NotImplementedError("Writing TimeSeries in NWBFiles with channel conversion factors is not supported!")
-    if not all([x['offset'] == 0 for x in accel_channels]):
-        raise NotImplementedError("Unable to support non-zero offsets for auxiliary channel data.")
+        raise NotImplementedError(
+            "Writing TimeSeries in NWBFiles with channel conversion factors is not supported!"
+        )
+    if not all([x["offset"] == 0 for x in accel_channels]):
+        raise NotImplementedError(
+            "Unable to support non-zero offsets for auxiliary channel data."
+        )
     if not all_equal(accel_channel_units):
-        raise NotImplementedError("Unequal auxiliary channel unit types are not yet supported.")
+        raise NotImplementedError(
+            "Unequal auxiliary channel unit types are not yet supported."
+        )
     if not all_equal(accel_channel_sampling_rate):
-        raise NotImplementedError("Unequal auxiliary channel sampling rates are not yet supported.")
+        raise NotImplementedError(
+            "Unequal auxiliary channel sampling rates are not yet supported."
+        )
 
     conversion = channel_conversion[0]
     accel_sampling_rate = accel_channel_sampling_rate[0]
     all_memmaps = [
-        [x._recording._raw_data[accel_channels[j]['name']].flatten() for j in range(accel_channels.size)]
+        [
+            x._recording._raw_data[accel_channels[j]["name"]].flatten()
+            for j in range(accel_channels.size)
+        ]
         for x in this_recording._recordings
     ]
 
@@ -57,7 +78,7 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
         data=H5DataIO(all_accel_data, compression="gzip"),
         unit=accel_channel_units[0],
         resolution=np.nan,
-        conversion=conversion
+        conversion=conversion,
     )
     if not use_times:
         tseries_kwargs.update(rate=accel_sampling_rate)
@@ -66,7 +87,7 @@ def write_accelerometer_data(nwbfile: NWBFile, recording, stub_test: bool = Fals
             np.arange(
                 0,
                 this_recording.get_num_frames(),
-                this_recording.get_sampling_frequency() / accel_sampling_rate
+                this_recording.get_sampling_frequency() / accel_sampling_rate,
             ).astype(int)
         )
         tseries_kwargs.update(timestamps=H5DataIO(accel_timestamps, compression="gzip"))
@@ -80,14 +101,23 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
     RX = SyntalosRecordingExtractor
 
     def get_metadata(self):
-        intan_filepath = [x for x in Path(self.source_data['folder_path']).iterdir() if x.suffix == ".rhd"][0]
+        intan_filepath = [
+            x
+            for x in Path(self.source_data["folder_path"]).iterdir()
+            if x.suffix == ".rhd"
+        ][0]
         temp_intan_interface = IntanRecordingInterface(file_path=intan_filepath)
         return temp_intan_interface.get_metadata()
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict, stub_test: bool = False,
-                       add_accelerometer: bool = True,
-                       overwrite: bool = False,
-                       use_times: bool = True):
+    def run_conversion(
+        self,
+        nwbfile: NWBFile,
+        metadata: dict,
+        stub_test: bool = False,
+        add_accelerometer: bool = True,
+        overwrite: bool = False,
+        use_times: bool = True,
+    ):
         """
         Primary conversion function for Syntalos recordings.
 
@@ -115,12 +145,12 @@ class SyntalosRecordingInterface(BaseRecordingExtractorInterface):
             nwbfile=nwbfile,
             metadata=metadata,
             use_times=use_times,
-            overwrite=overwrite
+            overwrite=overwrite,
         )
         if add_accelerometer:
             write_accelerometer_data(
                 nwbfile=nwbfile,
                 recording=recording,
                 stub_test=stub_test,
-                use_times=use_times
+                use_times=use_times,
             )

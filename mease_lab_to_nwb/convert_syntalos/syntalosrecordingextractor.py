@@ -24,16 +24,24 @@ class SyntalosRecordingExtractor(MultiRecordingTimeExtractor):
         file_paths = [p for p in Path(folder_path).iterdir() if p.suffix == ".rhd"]
         for file_path in file_paths:
             assert file_path.is_file(), "The provided file does not exist!"
-            assert file_path.suffix == '.rhd', "The provided file is not an '.rhd' file!"
+            assert (
+                file_path.suffix == ".rhd"
+            ), "The provided file is not an '.rhd' file!"
         assert len(file_paths) >= 1, "No rhd files found in the folder path!"
-        tsync_files = [p for p in file_paths[0].parent.iterdir() if p.suffix == '.tsync']
-        assert len(tsync_files) == 1, "Only one tsync file should be present in the Syntalos folder!"
+        tsync_files = [
+            p for p in file_paths[0].parent.iterdir() if p.suffix == ".tsync"
+        ]
+        assert (
+            len(tsync_files) == 1
+        ), "Only one tsync file should be present in the Syntalos folder!"
 
         # order rhd files by date
         dates = []
         for file_path in file_paths:
             file_name = file_path.stem
-            date = datetime.strptime("-".join(file_name.split("_")[-2:]), "%y%m%d-%H%M%S")
+            date = datetime.strptime(
+                "-".join(file_name.split("_")[-2:]), "%y%m%d-%H%M%S"
+            )
             dates.append(date)
         files_sorted = np.array(file_paths)[np.argsort(dates)]
 
@@ -60,8 +68,8 @@ def _get_timestamps_with_tsync(recording, tsync_file):
     sync_map = tsync.times
     num_frames = recording.get_num_frames()
     sampling_frequency = recording.get_sampling_frequency()
-    tv_usec = np.arange(num_frames, dtype=np.float64) / sampling_frequency * 1E6
-    tv_adj_usec = np.arange(num_frames, dtype=np.float64) / sampling_frequency * 1E6
+    tv_usec = np.arange(num_frames, dtype=np.float64) / sampling_frequency * 1e6
+    tv_adj_usec = np.arange(num_frames, dtype=np.float64) / sampling_frequency * 1e6
 
     init_offset_usec = offset_usec = sync_map[0][0] - sync_map[0][1]
     idx = np.where(tv_usec <= sync_map[0][0])[0]
@@ -75,4 +83,4 @@ def _get_timestamps_with_tsync(recording, tsync_file):
             idx = np.where(tv_usec > sync[0])[0]
         tv_adj_usec[idx] -= offset_usec
 
-    return tv_adj_usec / 1E6
+    return tv_adj_usec / 1e6

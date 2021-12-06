@@ -15,31 +15,32 @@ class SyntalosImageInterface(BaseDataInterface):
     @classmethod
     def get_source_schema(cls):
         return dict(
-            required=['folder_path'],
-            properties=dict(
-                folder_path=dict(type='string')
-            )
+            required=["folder_path"], properties=dict(folder_path=dict(type="string"))
         )
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict):
-        video_folder = Path(self.source_data['folder_path'])
-        video_file_path_list = [str(x) for x in video_folder.iterdir() if x.suffix == ".mkv"]
+        video_folder = Path(self.source_data["folder_path"])
+        video_file_path_list = [
+            str(x) for x in video_folder.iterdir() if x.suffix == ".mkv"
+        ]
 
         video_timestamps = np.empty(0)
         for video_file_path in video_file_path_list:
             video_time_df = pd.read_csv(
                 video_file_path.replace(".mkv", "_timestamps.csv"),
                 delimiter=";",
-                skipinitialspace=True
+                skipinitialspace=True,
             )
-            video_timestamps = np.append(video_timestamps, video_time_df['timestamp'].to_numpy() / 1E3)
+            video_timestamps = np.append(
+                video_timestamps, video_time_df["timestamp"].to_numpy() / 1e3
+            )
 
         # Custom labeled events
         videos = ImageSeries(
-            name='Videos',
+            name="Videos",
             description="Videos recorded by TIS camera.",
             format="external",
             external_file=video_file_path_list,
-            timestamps=H5DataIO(video_timestamps, compression="gzip")
+            timestamps=H5DataIO(video_timestamps, compression="gzip"),
         )
         nwbfile.add_acquisition(videos)
