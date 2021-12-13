@@ -20,7 +20,9 @@ def to_nwbfile(converter, filename):
 
 def test_cednwbconverter_ttltest(tmp_path):
     # read smrx file
-    file_recording = str((Path(__file__).parent / "data" / "TTLtest.smrx").resolve())
+    file_recording = str(
+        (Path(__file__).parent / "data" / "TTLtest_17mW.smrx").resolve()
+    )
     source_data = dict(
         CEDRecording=dict(file_path=file_recording),
         CEDStimulus=dict(file_path=file_recording),
@@ -31,20 +33,22 @@ def test_cednwbconverter_ttltest(tmp_path):
     stim_ids = source_data["CEDStimulus"]["smrx_channel_ids"]
     assert len(stim_ids) == 3
     # convert to nwb
-    file_nwb = str(tmp_path / "test.nwb")
+    file_nwb = str(tmp_path / "out.nwb")
     to_nwbfile(converter, file_nwb)
     # read nwb file
     io = pynwb.NWBHDF5IO(file_nwb, "r")
     nwbfile = io.read()
     assert len(nwbfile.stimulus) == 4
     # laser trace
-    laser = nwbfile.stimulus["Laser"]
+    laser = nwbfile.stimulus["17mW Laser"]
     assert type(laser) == pynwb.ogen.OptogeneticSeries
     assert len(laser.data) == 180180
     assert laser.starting_time == 0
     assert laser.rate == 30030.030030030033
+    assert np.allclose(np.min(laser.data), 0, atol=1e-3)
+    assert np.allclose(np.max(laser.data), 0.017)
     # laser stim (on/off for each individual pulse)
-    laser_stim = nwbfile.stimulus["LaserStimulus"]
+    laser_stim = nwbfile.stimulus["17mW LaserStimulus"]
     assert type(laser_stim) == pynwb.misc.IntervalSeries
     assert len(laser_stim.data) == 102
     assert len(laser_stim.timestamps) == 102
@@ -77,7 +81,9 @@ def test_cednwbconverter_ttltest(tmp_path):
 
 def test_cednwbconverter_m365(tmp_path):
     # read smrx file
-    file_recording = str((Path(__file__).parent / "data" / "m365_1sec.smrx").resolve())
+    file_recording = str(
+        (Path(__file__).parent / "data" / "m365_5.5mW_1sec.smrx").resolve()
+    )
     source_data = dict(
         CEDRecording=dict(file_path=file_recording),
         CEDStimulus=dict(file_path=file_recording),
@@ -88,12 +94,25 @@ def test_cednwbconverter_m365(tmp_path):
     stim_ids = source_data["CEDStimulus"]["smrx_channel_ids"]
     assert len(stim_ids) == 3
     # convert to nwb
-    file_nwb = str(tmp_path / "m365_1sec.nwb")
+    file_nwb = str(tmp_path / "out.nwb")
     to_nwbfile(converter, file_nwb)
     # read nwb file
     io = pynwb.NWBHDF5IO(file_nwb, "r")
     nwbfile = io.read()
     assert len(nwbfile.stimulus) == 4
+    # laser trace
+    laser = nwbfile.stimulus["5.5mW Laser"]
+    assert type(laser) == pynwb.ogen.OptogeneticSeries
+    assert len(laser.data) == 30030
+    assert laser.starting_time == 0
+    assert laser.rate == 30030.030030030033
+    assert np.allclose(np.min(laser.data), 0, atol=5e-3)
+    assert np.allclose(np.max(laser.data), 0.0055)
+    # laser stim (on/off for each individual pulse)
+    laser_stim = nwbfile.stimulus["5.5mW LaserStimulus"]
+    assert type(laser_stim) == pynwb.misc.IntervalSeries
+    assert len(laser_stim.data) == 0
+    assert len(laser_stim.timestamps) == 0
 
 
 def test_cednwbconverter_mech_laser(tmp_path):
@@ -111,20 +130,20 @@ def test_cednwbconverter_mech_laser(tmp_path):
     stim_ids = source_data["CEDStimulus"]["smrx_channel_ids"]
     assert len(stim_ids) == 3
     # convert to nwb
-    file_nwb = str(tmp_path / "m365_1sec.nwb")
+    file_nwb = str(tmp_path / "out.nwb")
     to_nwbfile(converter, file_nwb)
     # read nwb file
     io = pynwb.NWBHDF5IO(file_nwb, "r")
     nwbfile = io.read()
     assert len(nwbfile.stimulus) == 4
     # laser trace
-    laser = nwbfile.stimulus["Laser"]
+    laser = nwbfile.stimulus["?mW Laser"]
     assert type(laser) == pynwb.ogen.OptogeneticSeries
     assert len(laser.data) == 60060
     assert laser.starting_time == 0
     assert laser.rate == 30030.030030030033
     # laser stim (none in this smrx file)
-    laser_stim = nwbfile.stimulus["LaserStimulus"]
+    laser_stim = nwbfile.stimulus["?mW LaserStimulus"]
     assert type(laser_stim) == pynwb.misc.IntervalSeries
     assert len(laser_stim.data) == 0
     assert len(laser_stim.timestamps) == 0
@@ -151,7 +170,7 @@ def test_cednwbconverter_dual_laser(tmp_path):
     # read smrx file
     file_recording = str(
         (
-            Path(__file__).parent / "data" / "Dual_RhdD_H3__RhdC_H5_LaserOnly.smrx"
+            Path(__file__).parent / "data" / "Dual_RhdD_H3__RhdC_H5_LaserOnly_99mW.smrx"
         ).resolve()
     )
     source_data = dict(
@@ -165,20 +184,22 @@ def test_cednwbconverter_dual_laser(tmp_path):
     stim_ids = source_data["CEDStimulus"]["smrx_channel_ids"]
     assert len(stim_ids) == 3
     # convert to nwb
-    file_nwb = str(tmp_path / "m365_1sec.nwb")
+    file_nwb = str(tmp_path / "out.nwb")
     to_nwbfile(converter, file_nwb)
     # read nwb file
     io = pynwb.NWBHDF5IO(file_nwb, "r")
     nwbfile = io.read()
     assert len(nwbfile.stimulus) == 4
     # laser trace
-    laser = nwbfile.stimulus["Laser"]
+    laser = nwbfile.stimulus["99mW Laser"]
     assert type(laser) == pynwb.ogen.OptogeneticSeries
     assert len(laser.data) == 30030
     assert laser.starting_time == 0
     assert laser.rate == 30030.030030030033
+    assert np.allclose(np.min(laser.data), 0, atol=5e-3)
+    assert np.allclose(np.max(laser.data), 0.099)
     # laser stim
-    laser_stim = nwbfile.stimulus["LaserStimulus"]
+    laser_stim = nwbfile.stimulus["99mW LaserStimulus"]
     assert type(laser_stim) == pynwb.misc.IntervalSeries
     assert len(laser_stim.data) == 20
     assert len(laser_stim.timestamps) == 20
@@ -224,20 +245,20 @@ def test_cednwbconverter_mech_laser_bifreq(tmp_path):
     stim_ids = source_data["CEDStimulus"]["smrx_channel_ids"]
     assert len(stim_ids) == 3
     # convert to nwb
-    file_nwb = str(tmp_path / "m365_1sec.nwb")
+    file_nwb = str(tmp_path / "out.nwb")
     to_nwbfile(converter, file_nwb)
     # read nwb file
     io = pynwb.NWBHDF5IO(file_nwb, "r")
     nwbfile = io.read()
     assert len(nwbfile.stimulus) == 4
     # laser trace
-    laser = nwbfile.stimulus["Laser"]
+    laser = nwbfile.stimulus["?mW Laser"]
     assert type(laser) == pynwb.ogen.OptogeneticSeries
     assert len(laser.data) == 5555238  # note: actual length in smrx file is 5555556
     assert laser.starting_time == 0
     assert laser.rate == 30030.030030030033
     # laser stim
-    laser_stim = nwbfile.stimulus["LaserStimulus"]
+    laser_stim = nwbfile.stimulus["?mW LaserStimulus"]
     assert type(laser_stim) == pynwb.misc.IntervalSeries
     assert len(laser_stim.data) == 216
     assert len(laser_stim.timestamps) == 216

@@ -1,5 +1,6 @@
 """Authors: Cody Baker and Alessio Buccino."""
 import numpy as np
+import re
 
 from pynwb import NWBFile, TimeSeries
 from pynwb.misc import IntervalSeries
@@ -11,6 +12,20 @@ from nwb_conversion_tools.datainterfaces.ecephys.baserecordingextractorinterface
 )
 from nwb_conversion_tools.utils.json_schema import get_schema_from_method_signature
 from spikeextractors import RecordingExtractor, CEDRecordingExtractor
+
+
+def laser_power_from_filename(filename: str):
+    """Extract laser power from smrx filename
+
+    Returns float and string representations of laser power extracted from filename.
+    Assumes filename of form "*[optional numbers][optional .][at least 1 number]mW*".
+    """
+    # search for
+    m = re.search(r"([0-9]*\.?[0-9]+)mW", filename)
+    if m:
+        mw = float(m.group(1))
+        return mw, f"{mw:g}mW"
+    return None, "?mW"
 
 
 def check_module(nwbfile, name, description=None):
@@ -112,14 +127,18 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
                 1,
             )
         )
+        laser_power_mw, laser_power_str = laser_power_from_filename(
+            self.recording_extractor._kwargs["file_path"]
+        )
         nwbfile.add_stimulus(
             intervals_from_traces(
-                "LaserStimulus",
+                f"{laser_power_str} LaserStimulus",
                 "Activation times inferred from TTL commands for cortical laser stimulus.",
                 self.recording_extractor,
                 2,
             )
         )
+
         if stub_test or self.subset_channels is not None:
             recording = self.subset_recording(stub_test=stub_test)
         else:
@@ -148,11 +167,16 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
             excitation_lambda=1.0,
             location="location",
         )
+        laser_trace = recording.get_traces(2)[0]
+        if laser_power_mw:
+            # rescale laser trace
+            max_laser_trace = np.max(laser_trace)
+            laser_trace *= 0.001 * laser_power_mw / max_laser_trace
         nwbfile.add_ogen_site(ogen_site)
         nwbfile.add_stimulus(
             OptogeneticSeries(
-                name="Laser",
-                data=recording.get_traces(2)[0],
+                name=f"{laser_power_str} Laser",
+                data=laser_trace,
                 site=ogen_site,
                 rate=recording.get_sampling_frequency(),
                 description="Laser TTL.",
