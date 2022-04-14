@@ -38,3 +38,4 @@ dependencies:
     - psutil
     - opencv-python
     - jupyterlab-nvdashboard
+    - mease-elabftw

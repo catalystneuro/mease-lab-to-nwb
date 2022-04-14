@@ -112,7 +112,7 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
                 type=source_schema["properties"]["file_path"]["type"],
                 format="file",
                 description="path to data file",
-            )
+            ),
         )
         return source_schema
 
@@ -167,6 +167,7 @@ class CEDStimulusInterface(BaseRecordingExtractorInterface):
             excitation_lambda=1.0,
             location="location",
         )
+
         laser_trace = recording.get_traces(2)[0]
         if laser_power_mw:
             # rescale laser trace
