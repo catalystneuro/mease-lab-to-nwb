@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import os
+import mease_elabftw
 
 
 def to_nwbfile(converter, filename):
@@ -18,7 +19,14 @@ def to_nwbfile(converter, filename):
     )
 
 
-def test_cednwbconverter_ttltest(tmp_path):
+@pytest.fixture
+def mock_get_nwb_metadata(monkeypatch):
+    monkeypatch.setattr(
+        mease_elabftw, "get_nwb_metadata", mease_elabftw.nwb.get_sample_nwb_metadata
+    )
+
+
+def test_cednwbconverter_ttltest(tmp_path, mock_get_nwb_metadata):
     # read smrx file
     file_recording = str(
         (Path(__file__).parent / "data" / "TTLtest_17mW.smrx").resolve()
@@ -26,6 +34,7 @@ def test_cednwbconverter_ttltest(tmp_path):
     source_data = dict(
         CEDRecording=dict(file_path=file_recording),
         CEDStimulus=dict(file_path=file_recording),
+        Elabftw=dict(experiment_id=1),
     )
     converter = CEDNWBConverter(source_data=source_data)
     rec_ids = source_data["CEDRecording"]["smrx_channel_ids"]
@@ -38,8 +47,22 @@ def test_cednwbconverter_ttltest(tmp_path):
     # read nwb file
     io = pynwb.NWBHDF5IO(file_nwb, "r")
     nwbfile = io.read()
-    assert len(nwbfile.stimulus) == 4
+    # metadata
+    assert nwbfile.fields["experimenter"] == ("Liam Keegan",)
+    assert (
+        nwbfile.fields["identifier"]
+        == "20211001-8b6f100d66f4312d539c52620f79d6a503c1e2d1"
+    )
+    assert (
+        nwbfile.fields["session_description"]
+        == "test fake experiment with json metadata"
+    )
+    assert nwbfile.subject.fields["description"] == "test mouse"
+    assert nwbfile.subject.fields["genotype"] == "Nt1Cre-ChR2-EYFP"
+    assert nwbfile.subject.fields["subject_id"] == "xy1"
+    assert nwbfile.subject.fields["weight"] == "0.002 kg"
     # laser trace
+    assert len(nwbfile.stimulus) == 4
     laser = nwbfile.stimulus["17mW Laser"]
     assert type(laser) == pynwb.ogen.OptogeneticSeries
     assert len(laser.data) == 180180
@@ -79,7 +102,7 @@ def test_cednwbconverter_ttltest(tmp_path):
     io.close()
 
 
-def test_cednwbconverter_m365(tmp_path):
+def test_cednwbconverter_m365(tmp_path, mock_get_nwb_metadata):
     # read smrx file
     file_recording = str(
         (Path(__file__).parent / "data" / "m365_5.5mW_1sec.smrx").resolve()
@@ -87,6 +110,7 @@ def test_cednwbconverter_m365(tmp_path):
     source_data = dict(
         CEDRecording=dict(file_path=file_recording),
         CEDStimulus=dict(file_path=file_recording),
+        Elabftw=dict(experiment_id=1),
     )
     converter = CEDNWBConverter(source_data=source_data)
     rec_ids = source_data["CEDRecording"]["smrx_channel_ids"]
@@ -115,7 +139,7 @@ def test_cednwbconverter_m365(tmp_path):
     assert len(laser_stim.timestamps) == 0
 
 
-def test_cednwbconverter_mech_laser(tmp_path):
+def test_cednwbconverter_mech_laser(tmp_path, mock_get_nwb_metadata):
     # read smrx file
     file_recording = str(
         (Path(__file__).parent / "data" / "RhdD_H5_Mech+Laser.smrx").resolve()
@@ -123,6 +147,7 @@ def test_cednwbconverter_mech_laser(tmp_path):
     source_data = dict(
         CEDRecording=dict(file_path=file_recording),
         CEDStimulus=dict(file_path=file_recording),
+        Elabftw=dict(experiment_id=1),
     )
     converter = CEDNWBConverter(source_data=source_data)
     rec_ids = source_data["CEDRecording"]["smrx_channel_ids"]
@@ -166,7 +191,7 @@ def test_cednwbconverter_mech_laser(tmp_path):
     io.close()
 
 
-def test_cednwbconverter_dual_laser(tmp_path):
+def test_cednwbconverter_dual_laser(tmp_path, mock_get_nwb_metadata):
     # read smrx file
     file_recording = str(
         (
@@ -176,6 +201,7 @@ def test_cednwbconverter_dual_laser(tmp_path):
     source_data = dict(
         CEDRecording=dict(file_path=file_recording),
         CEDStimulus=dict(file_path=file_recording),
+        Elabftw=dict(experiment_id=1),
     )
     converter = CEDNWBConverter(source_data=source_data)
     rec_ids = source_data["CEDRecording"]["smrx_channel_ids"]
@@ -230,7 +256,7 @@ def test_cednwbconverter_dual_laser(tmp_path):
     io.close()
 
 
-def test_cednwbconverter_mech_laser_bifreq(tmp_path):
+def test_cednwbconverter_mech_laser_bifreq(tmp_path, mock_get_nwb_metadata):
     # read smrx file
     file_recording = str(
         (Path(__file__).parent / "data" / "H5_Mech_1Hz_10Hz.smrx").resolve()
@@ -238,6 +264,7 @@ def test_cednwbconverter_mech_laser_bifreq(tmp_path):
     source_data = dict(
         CEDRecording=dict(file_path=file_recording),
         CEDStimulus=dict(file_path=file_recording),
+        Elabftw=dict(experiment_id=1),
     )
     converter = CEDNWBConverter(source_data=source_data)
     rec_ids = source_data["CEDRecording"]["smrx_channel_ids"]

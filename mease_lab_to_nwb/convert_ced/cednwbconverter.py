@@ -9,6 +9,7 @@ from nwb_conversion_tools import NWBConverter, CEDRecordingInterface
 from nwb_conversion_tools.utils.spike_interface import write_recording
 
 from .cedstimulusinterface import CEDStimulusInterface
+from .elabftwinterface import ElabftwInterface
 
 
 def quick_write(
@@ -43,7 +44,9 @@ def quick_write(
 
 class CEDNWBConverter(NWBConverter):
     data_interface_classes = dict(
-        CEDRecording=CEDRecordingInterface, CEDStimulus=CEDStimulusInterface
+        CEDRecording=CEDRecordingInterface,
+        CEDStimulus=CEDStimulusInterface,
+        Elabftw=ElabftwInterface,
     )
 
     def __init__(self, source_data):
@@ -67,7 +70,5 @@ class CEDNWBConverter(NWBConverter):
             self.data_interface_objects["CEDRecording"].source_data["file_path"]
         )
         session_id = smrx_file_path.stem
-        metadata["NWBFile"].update(
-            institution="EMBL - Heidelberg", lab="Mease", session_id=session_id
-        )
+        metadata["NWBFile"].update(session_id=session_id)
         return metadata
