@@ -1,13 +1,13 @@
 import pytest
 import numpy as np
 import mat73
-from mease_lab_to_nwb.get_laser_conditions import get_frequencies
+from mease_lab_to_nwb.convert_ced.cedstimulusinterface import get_frequencies
+from pynwb import NWBHDF5IO
 
 
 def test_get_frequencies():
-
-    # import timestamps
-    ts = np.load("tests/data/timestamp_test.npy")
+    io = NWBHDF5IO("tests/data/P3_S1HL_Freq_Cycle_4mW.nwb", "r")
+    nwbfile = io.read()
 
     # import control data
     data_dict = mat73.loadmat("tests/data/test_m6pt2and3_analysis.mat")
@@ -31,7 +31,7 @@ def test_get_frequencies():
 
     # calculate laser frequencies
 
-    data = get_frequencies(ts, 4)
+    data = get_frequencies(nwbfile.stimulus["4mW LaserStimulus"], 4)
     for condition in data.values():
         condition = np.asarray(condition)
 
