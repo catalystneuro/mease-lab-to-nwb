@@ -15,11 +15,8 @@ def to_hz_str(interval, unique_intervals):
 
 def get_frequencies(ts, laser_power):
     """
-    
-    Extract frequency information and frequency blocks from timestamp data. 
-    Currently the largest difference between our method and theirs is 3.33 e-5 s 
-
-
+    Extract frequency information and frequency blocks from timestamp data.
+    Currently the largest difference between our method and theirs is 3.33 e-5 s
 
     :param ts: The timestamp series
     :type ts: ndarray
@@ -28,7 +25,6 @@ def get_frequencies(ts, laser_power):
     :return: The laser conditions dict
     :rtype: dict
     """
-
 
     dts = np.diff(ts)
     times = ts[0::2]
