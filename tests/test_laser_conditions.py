@@ -7,10 +7,10 @@ from mease_lab_to_nwb.get_laser_conditions import get_frequencies
 def test_get_frequencies():
 
     # import timestamps
-    ts = np.load("testing_data/timestamp_test.npy")
+    ts = np.load("tests/data/timestamp_test.npy")
 
     # import control data
-    data_dict = mat73.loadmat("testing_data/test_m6pt2and3_analysis.mat")
+    data_dict = mat73.loadmat("tests/data/test_m6pt2and3_analysis.mat")
     names = data_dict["Conditions"]["name"]
     triggers = data_dict["Conditions"]["Triggers"]
     t0 = 0
